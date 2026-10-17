@@ -23,29 +23,37 @@ function anciennete(iso) {
   return `il y a ${Math.floor(s / 86400)} j`;
 }
 
-const SVG = 'http://www.w3.org/2000/svg';
+const SVG = "http://www.w3.org/2000/svg";
+// Petit bonhomme en pixel-art : corps large, deux bras, deux yeux, quatre pattes
 function mascotte(etat) {
-  const svg = document.createElementNS(SVG, 'svg');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('class', `mascotte m-${etat}`);
-  svg.setAttribute('aria-hidden', 'true');
-  const forme = (parent, classe, x, y, w, h, rx = 0) => {
-    const r = document.createElementNS(SVG, 'rect');
-    r.setAttribute('class', classe);
-    Object.entries({ x, y, width: w, height: h, rx }).forEach(([k, v]) => r.setAttribute(k, v));
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 -6 24 22");
+  svg.setAttribute("class", `mascotte m-${etat}`);
+  svg.setAttribute("aria-hidden", "true");
+  const forme = (parent, classe, x, y, w, h) => {
+    const r = document.createElementNS(SVG, "rect");
+    r.setAttribute("class", classe);
+    Object.entries({ x, y, width: w, height: h }).forEach(([k, v]) => r.setAttribute(k, v));
     parent.append(r);
   };
-  const tout = document.createElementNS(SVG, 'g');
-  tout.setAttribute('class', 'tout');
-  forme(tout, 'membre bras-g', 0.5, 11, 3, 4, 1);
-  forme(tout, 'membre bras-d', 20.5, 11, 3, 4, 1);
-  forme(tout, 'membre', 6, 18, 3, 4, 1);
-  forme(tout, 'membre', 15, 18, 3, 4, 1);
-  forme(tout, 'corps', 3, 7, 18, 12, 3);
-  forme(tout, 'oeil', 8, 10.5, 2.2, 4, 1);
-  forme(tout, 'oeil', 13.8, 10.5, 2.2, 4, 1);
-  svg.append(tout);
-  for (let i = 0; i < 3; i++) forme(svg, 'bulle', 15 + i * 3, 1.5, 1.8, 1.8, 0.9);
+  const g = (parent, classe) => {
+    const e = document.createElementNS(SVG, "g");
+    e.setAttribute("class", classe);
+    parent.append(e);
+    return e;
+  };
+  const tout = g(svg, "tout");
+  forme(tout, "membre jambe jambe-a", 5, 11, 2, 4);
+  forme(tout, "membre jambe jambe-b", 9, 11, 2, 4);
+  forme(tout, "membre jambe jambe-a", 13, 11, 2, 4);
+  forme(tout, "membre jambe jambe-b", 17, 11, 2, 4);
+  forme(tout, "membre bras bras-g", 0, 5, 4, 3);
+  forme(tout, "membre bras bras-d", 20, 5, 4, 3);
+  forme(tout, "corps", 4, 2, 16, 9);
+  const yeux = g(tout, "yeux");
+  forme(yeux, "oeil", 7, 5, 2, 3);
+  forme(yeux, "oeil", 15, 5, 2, 3);
+  for (let i = 0; i < 3; i++) forme(svg, "bulle", 14 + i * 3.5, -4.5, 2, 2);
   return svg;
 }
 

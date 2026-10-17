@@ -79,14 +79,13 @@ header .mascotte { width: 38px; height: 35px; }
 .m-bloque .tout { animation: tremble .3s steps(1) infinite; }
 .m-fait .oeil { transform: scaleY(.3); }
 @keyframes clin { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.15); } }
-@keyframes rebond { 0% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
-@keyframes patte { 0% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
-@keyframes bras { 0% { transform: rotate(0); } 50% { transform: rotate(-12deg); } }
-@keyframes regard { 0% { transform: translateX(0); } 25% { transform: translateX(-1px); } 50% { transform: translateX(0); } 75% { transform: translateX(1px); } }
+@keyframes rebond { 0% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes patte { 0% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes bras { 0% { transform: rotate(0); } 50% { transform: rotate(-25deg); } }
+@keyframes regard { 0% { transform: translateX(0); } 25% { transform: translateX(-1.5px); } 50% { transform: translateX(0); } 75% { transform: translateX(1.5px); } }
 @keyframes points { 0% { opacity: 0; } 33% { opacity: 1; } 100% { opacity: 1; } }
 @keyframes salut { 0% { transform: rotate(0); } 50% { transform: rotate(-40deg); } }
 @keyframes tremble { 0% { transform: translateX(-.5px); } 50% { transform: translateX(.5px); } }
-@media (prefers-reduced-motion: reduce) { .mascotte, .mascotte * { animation: none !important; } .m-encours .bulle { opacity: 1; } }
 .carte-tete .mascotte { margin-right: 8px; align-self: center; }
 .carte-gauche { display: flex; min-width: 0; }
 header h1 { margin-right: auto; }

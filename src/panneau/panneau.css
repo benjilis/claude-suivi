@@ -66,12 +66,10 @@ header .mascotte { width: 38px; height: 35px; }
 .mascotte .bras-d { transform-origin: left center; }
 
 /* En cours : il trotte sur place, regarde autour de lui et réfléchit (...) */
-.m-encours .tout { animation: rebond .5s steps(2) infinite; }
-.m-encours .jambe-a { animation: patte .5s steps(1) infinite; }
-.m-encours .jambe-b { animation: patte .5s steps(1) infinite reverse; }
-.m-encours .yeux { animation: regard 2.6s steps(1) infinite; }
-.m-encours .bras-g { animation: bras .5s steps(1) infinite; }
-.m-encours .bras-d { animation: bras .5s steps(1) infinite reverse; }
+.m-encours .tout { animation: rebond 1.4s steps(2) infinite; }
+.m-encours .yeux { animation: lit 2s steps(1) infinite; }
+.m-encours .bras-g { animation: tape .3s steps(1) infinite; }
+.m-encours .bras-d { animation: tape .3s steps(1) infinite reverse; }
 .m-encours .bulle { animation: points 1.5s steps(1) infinite; }
 .m-encours .bulle:nth-of-type(2) { animation-delay: .25s; }
 .m-encours .bulle:nth-of-type(3) { animation-delay: .5s; }
@@ -79,7 +77,7 @@ header .mascotte { width: 38px; height: 35px; }
 .sym-attente { color: var(--attente); } .sym-bloque { color: var(--bloque); } .sym-fait { color: var(--fait); } .sym-afaire { color: var(--afaire); }
 
 /* Attend ta réponse : il te fait signe et un « ? » clignote */
-.m-attente .bras-d { animation: salut .5s steps(1) infinite; }
+.m-attente .bras-d { animation: pointe .8s steps(1) infinite; }
 .m-attente .tout { animation: rebond 1s steps(2) infinite; }
 .m-attente .sym { animation: clignote 1s steps(1) infinite; }
 /* Bloqué : il tremble, yeux écarquillés, « ! » rouge qui clignote vite */
@@ -212,3 +210,15 @@ body.grand textarea { min-height: 90px; }
 .m-chill .sym { animation: monte 2.4s steps(3) infinite; }
 @keyframes balance { 0% { transform: translateX(-.8px) rotate(-2deg); } 50% { transform: translateX(.8px) rotate(2deg); } }
 @keyframes detente { 0% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }
+
+/* Claude au travail sur son ordinateur */
+.mascotte .ecran { fill: #4a4945; }
+.mascotte .logo { fill: #d9d7cc; }
+.mascotte .clavier { fill: #8a8880; }
+/* Claude à lunettes, doigt levé */
+.mascotte .monture { fill: #1f1410; }
+.mascotte .verre { fill: #f5f4ee; }
+.m-attente .bras-d { transform-origin: left bottom; }
+@keyframes tape { 0% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes lit { 0% { transform: translateY(0); } 50% { transform: translateY(.8px); } }
+@keyframes pointe { 0% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }

@@ -59,8 +59,16 @@ function mascotte(etat) {
   forme(tout, "membre jambe jambe-b", 9, 11, 2, 4);
   forme(tout, "membre jambe jambe-a", 13, 11, 2, 4);
   forme(tout, "membre jambe jambe-b", 17, 11, 2, 4);
-  forme(tout, "membre bras bras-g", 0, 5, 4, 3);
-  forme(tout, "membre bras bras-d", 20, 5, 4, 3);
+  if (etat !== "encours") forme(tout, "membre bras bras-g", 0, 5, 4, 3);
+  if (etat === "attente") {
+    // bras droit levé, un doigt en l'air : « j'ai une question ☝ »
+    const bras = g(tout, "bras bras-d");
+    forme(bras, "membre", 20, 6, 3, 4);
+    forme(bras, "membre", 20, 3, 4, 3);
+    forme(bras, "membre", 21.3, -1, 1.4, 4);
+  } else if (etat !== "encours") {
+    forme(tout, "membre bras bras-d", 20, 5, 4, 3);
+  }
   forme(tout, "corps", 4, 2, 16, 9);
   if (etat === "chill") {
     // lunettes de soleil + petit sourire
@@ -70,10 +78,27 @@ function mascotte(etat) {
     forme(tout, "reflet", 7, 5.5, 1, 1);
     forme(tout, "reflet", 14, 5.5, 1, 1);
     forme(tout, "bouche", 10, 9, 4, 1);
+  } else if (etat === "attente") {
+    // lunettes de premier de la classe : montures rondes, grands yeux, pont
+    for (const x of [6, 13]) {
+      forme(tout, "monture", x, 4, 5, 5);
+      forme(tout, "verre", x + 1, 5, 3, 3);
+      forme(tout, "oeil", x + 2, 5.5, 1, 2);
+    }
+    forme(tout, "monture", 11, 5, 2, 1);
+    forme(tout, "bouche", 11, 9.5, 2, 1);
   } else {
     const yeux = g(tout, "yeux");
     forme(yeux, "oeil", 7, 5, 2, 3);
     forme(yeux, "oeil", 15, 5, 2, 3);
+  }
+  if (etat === "encours") {
+    // Claude au travail devant son ordinateur portable : le dos de l'écran, le clavier, les mains qui tapent
+    forme(tout, "ecran", 5, 8.5, 14, 4.5);
+    forme(tout, "logo", 11, 9.8, 2, 2);
+    forme(tout, "clavier", 3, 13, 18, 1.5);
+    forme(tout, "membre bras bras-g", 1, 9, 4, 3);
+    forme(tout, "membre bras bras-d", 19, 9, 4, 3);
   }
   if (etat === "encours") for (let i = 0; i < 3; i++) forme(svg, "bulle", 14 + i * 3.5, -4.5, 2, 2);
   if (GLYPHES[etat]) {

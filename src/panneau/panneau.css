@@ -75,9 +75,35 @@ header .mascotte { width: 38px; height: 35px; }
 .m-encours .bulle { animation: points 1.5s steps(1) infinite; }
 .m-encours .bulle:nth-of-type(2) { animation-delay: .25s; }
 .m-encours .bulle:nth-of-type(3) { animation-delay: .5s; }
-.m-attente .bras-d { animation: salut .6s steps(1) infinite; }
-.m-bloque .tout { animation: tremble .3s steps(1) infinite; }
+.mascotte .pixel { fill: currentColor; }
+.sym-attente { color: var(--attente); } .sym-bloque { color: var(--bloque); } .sym-fait { color: var(--fait); } .sym-afaire { color: var(--afaire); }
+
+/* Attend ta réponse : il te fait signe et un « ? » clignote */
+.m-attente .bras-d { animation: salut .5s steps(1) infinite; }
+.m-attente .tout { animation: rebond 1s steps(2) infinite; }
+.m-attente .sym { animation: clignote 1s steps(1) infinite; }
+/* Bloqué : il tremble, yeux écarquillés, « ! » rouge qui clignote vite */
+.m-bloque .tout { animation: tremble .2s steps(1) infinite; }
+.m-bloque .oeil { transform: scaleY(1.2); }
+.m-bloque .bras-g { animation: salut .25s steps(1) infinite reverse; }
+.m-bloque .sym { animation: clignote .5s steps(1) infinite; }
+/* Fait : il saute de joie, yeux contents, ✓ vert */
+.m-fait .tout { animation: joie 1s steps(1) infinite; }
 .m-fait .oeil { transform: scaleY(.3); }
+.m-fait .bras-g { animation: hourra 1s steps(1) infinite; }
+.m-fait .bras-d { animation: hourra 1s steps(1) infinite; }
+.m-fait .sym { animation: pop 1s steps(1) infinite; }
+/* À faire : il dort, il respire doucement, « z » qui monte */
+.m-afaire .tout { animation: respire 3s steps(2) infinite; }
+.m-afaire .oeil { transform: scaleY(.15); }
+.m-afaire .yeux { animation: none; }
+.m-afaire .sym { animation: monte 2.4s steps(3) infinite; }
+@keyframes clignote { 0% { opacity: 1; } 50% { opacity: .15; } }
+@keyframes joie { 0% { transform: translateY(0); } 40% { transform: translateY(-4px); } 70% { transform: translateY(0); } }
+@keyframes hourra { 0% { transform: rotate(0); } 40% { transform: rotate(-45deg); } 70% { transform: rotate(0); } }
+@keyframes pop { 0% { transform: scale(.6); } 40% { transform: scale(1.15); } 70% { transform: scale(1); } }
+@keyframes respire { 0% { transform: scaleY(1); } 50% { transform: scaleY(.94); } }
+@keyframes monte { 0% { transform: translateY(2px); opacity: 0; } 33% { opacity: 1; } 100% { transform: translateY(-2px); opacity: 0; } }
 @keyframes clin { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.15); } }
 @keyframes rebond { 0% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 @keyframes patte { 0% { transform: translateY(0); } 50% { transform: translateY(-3px); } }

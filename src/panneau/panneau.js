@@ -25,6 +25,13 @@ function anciennete(iso) {
 
 const SVG = "http://www.w3.org/2000/svg";
 // Petit bonhomme en pixel-art : corps large, deux bras, deux yeux, quatre pattes
+// Petits pictogrammes en pixels affichés au-dessus du bonhomme selon l'état
+const GLYPHES = {
+  attente: ["###", "..#", ".#.", "...", ".#."],
+  bloque: [".#.", ".#.", ".#.", "...", ".#."],
+  fait: ["....#", "...#.", "#.#..", ".#..."],
+  afaire: ["###", "..#", ".#.", "#..", "###"],
+};
 function mascotte(etat) {
   const svg = document.createElementNS(SVG, "svg");
   svg.setAttribute("viewBox", "0 -6 24 22");
@@ -53,7 +60,11 @@ function mascotte(etat) {
   const yeux = g(tout, "yeux");
   forme(yeux, "oeil", 7, 5, 2, 3);
   forme(yeux, "oeil", 15, 5, 2, 3);
-  for (let i = 0; i < 3; i++) forme(svg, "bulle", 14 + i * 3.5, -4.5, 2, 2);
+  if (etat === "encours") for (let i = 0; i < 3; i++) forme(svg, "bulle", 14 + i * 3.5, -4.5, 2, 2);
+  if (GLYPHES[etat]) {
+    const sym = g(svg, `sym sym-${etat}`);
+    GLYPHES[etat].forEach((ligne, y) => [...ligne].forEach((c, x) => { if (c === "#") forme(sym, "pixel", 17 + x * 1.2, -6 + y * 1.2, 1.2, 1.2); }));
+  }
   return svg;
 }
 
@@ -65,7 +76,7 @@ function carte(s) {
   texte.style.minWidth = '0';
   texte.append(el('div', 'titre', s.titre));
   if (s.projet) texte.append(el('div', 'projet', s.projet));
-  if (s.etat === 'encours') gauche.append(mascotte('encours'));
+  gauche.append(mascotte(s.etat));
   gauche.append(texte);
   tete.append(gauche,el('span', `pastille e-${s.etat}`, LIBELLES[s.etat] || s.etat));
   c.append(tete);

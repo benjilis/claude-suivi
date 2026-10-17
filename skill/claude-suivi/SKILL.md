@@ -40,11 +40,14 @@ N'appelle pas à chaque commande : seulement aux changements qui comptent.
 | `etat` | `encours`, `attente`, `bloque`, `fait` ou `afaire` |
 | `detail` | 1-2 lignes : ce qui se passe maintenant |
 | `aToi` | (facultatif) action pour l'utilisateur, ajoutée à « À toi de jouer » |
+| `points` | (facultatif) 3 à 6 puces très courtes (120 caractères max chacune) : ce qui est fait, en cours, à venir. Visibles seulement quand l'utilisateur ouvre le panneau en plein écran. Remplace la liste précédente ; omis = inchangé |
 | `lien` | (facultatif) lien cliquable qui ouvre la session : `https://…` ou `claude://…`. **Ne l'invente jamais** : mets-le seulement si tu connais l'adresse exacte, sinon omet le champ. `""` l'efface |
 
 **Textes courts, lisibles d'un coup d'œil** (le surplus est coupé avec « … ») : `titre` 60 caractères, `projet` 40, `detail` 140, `aToi` 100, `point` 200. Écris des phrases brèves, sans détails techniques.
 
 **Id stable** : `projet-sujet` en minuscules sans espaces ni accents (ex. `mon-site-accueil`). Garde **le même id** pendant toute la session pour mettre à jour la même carte. L'id va dans l'URL, jamais d'espaces.
+
+Exemple de puces (PowerShell) : `@{ points = @('✔ Tests écrits', '… Page d accueil en cours', 'À faire : relecture') }` ; en JSON : `"points":["✔ Tests écrits","… En cours : accueil"]`.
 
 Autres routes : `DELETE /sessions/:id`, `PUT /point` `{ "texte": "..." }` (résumé global d'une phrase), `POST /actions` `{ "texte": "...", "projet": "..." }`, `DELETE /actions/:id`, `GET /etat`.
 

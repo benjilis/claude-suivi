@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('suivi', {
   cocherAction: (id) => ipcRenderer.send('cocher-action', id),
   retirerSession: (id) => ipcRenderer.send('retirer-session', id),
   ouvrirLien: (url) => ipcRenderer.send('ouvrir-lien', url),
+  pleinEcran: (actif) => ipcRenderer.send('plein-ecran', actif),
+  onPleinEcran: (cb) => ipcRenderer.on('plein-ecran', (_e, actif) => cb(actif)),
   notes: (texte) => ipcRenderer.send('notes', texte),
   reglage: (cle, valeur) => ipcRenderer.send('reglage', cle, valeur),
 });

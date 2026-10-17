@@ -17,6 +17,8 @@ let tray, fenetre, store, serveur;
 let pastille = false;
 let dernierMasquage = 0;
 let dernierPlacement = 0;
+let pleinEcran = false;
+let boitePetite = null;
 let reglages = { notifications: true, epingle: false, tri: 'etat' };
 
 const fichierReglages = () => path.join(app.getPath('userData'), 'reglages.json');
@@ -79,12 +81,12 @@ function creerFenetre() {
   fenetre.loadFile(path.join(__dirname, 'panneau', 'index.html'));
   fenetre.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   fenetre.webContents.on('will-navigate', (e) => e.preventDefault());
-  fenetre.on('blur', () => { if (!reglages.epingle && fenetre.isVisible()) { fenetre.hide(); dernierMasquage = Date.now(); } });
+  fenetre.on('blur', () => { if (!reglages.epingle && !pleinEcran && fenetre.isVisible()) { fenetre.hide(); dernierMasquage = Date.now(); } });
   fenetre.on('show', () => envoyerEtat());
   // Déplacé à la main : on retient l'endroit (fin du déplacement, après une courte pause)
   let minuteurPosition;
   fenetre.on('move', () => {
-    if (Date.now() - dernierPlacement < 800) return; // placement automatique, pas un déplacement
+    if (pleinEcran || Date.now() - dernierPlacement < 800) return; // placement automatique, pas un déplacement
     clearTimeout(minuteurPosition);
     minuteurPosition = setTimeout(() => {
       if (!fenetre.isVisible()) return;
@@ -118,6 +120,23 @@ function positionMemorisee() {
   return visible ? p : null;
 }
 
+// Grand mode : le panneau remplit la zone de travail (la barre des tâches reste visible)
+function basculerPleinEcran(actif = !pleinEcran) {
+  if (actif === pleinEcran || !fenetre) return;
+  pleinEcran = actif;
+  dernierPlacement = Date.now() + 1500;
+  if (actif) {
+    boitePetite = fenetre.getBounds();
+    const zone = screen.getDisplayMatching(boitePetite).workArea;
+    fenetre.setResizable(true);
+    fenetre.setBounds(zone);
+  } else {
+    fenetre.setResizable(false);
+    fenetre.setBounds(boitePetite || { x: 0, y: 0, width: LARGEUR, height: HAUTEUR });
+  }
+  fenetre.webContents.send('plein-ecran', pleinEcran);
+}
+
 function ouvrir() {
   const p = reglages.epingle ? positionMemorisee() : null;
   dernierPlacement = Date.now();
@@ -128,7 +147,7 @@ function ouvrir() {
 }
 
 function basculer() {
-  if (fenetre.isVisible()) { fenetre.hide(); return; }
+  if (fenetre.isVisible()) { basculerPleinEcran(false); fenetre.hide(); return; }
   // le clic sur l'icône retire d'abord le focus (donc masque) : on ignore la réouverture immédiate
   if (Date.now() - dernierMasquage < 250) return;
   ouvrir();
@@ -202,6 +221,7 @@ app.whenReady().then(async () => {
 
   nativeTheme.on('updated', () => fenetre.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#262624' : '#FAF9F5'));
 
+  ipcMain.on('plein-ecran', (_e, actif) => { if (typeof actif === 'boolean') basculerPleinEcran(actif); });
   ipcMain.handle('etat', () => store.lire());
   ipcMain.handle('reglages', () => lireReglages());
   ipcMain.on('cocher-action', (_e, id) => { if (typeof id === 'string') store.supprimerAction(id); });

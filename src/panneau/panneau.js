@@ -85,10 +85,16 @@ function carte(s) {
   tete.append(gauche,el('span', `pastille e-${s.etat}`, LIBELLES[s.etat] || s.etat));
   c.append(tete);
   if (s.detail) c.append(el('p', 'detail', s.detail));
+  if ((s.points || []).length) {
+    const ul = el('ul', 'puces');
+    for (const p of s.points) ul.append(el('li', null, p));
+    c.append(ul);
+  }
   if (s.lien) {
     c.classList.add('cliquable');
     c.title = 'Ouvrir la session';
     c.addEventListener('click', () => window.suivi.ouvrirLien(s.lien));
+    c.append(el('span', 'ouvrir', 'Ouvrir ↗'));
   }
   const pied = el('div', 'pied');
   pied.append(el('span', null, `Mis à jour à ${heure(s.maj)}`), el('span', 'age', anciennete(s.maj)));
@@ -209,3 +215,12 @@ $('btn-tri').addEventListener('click', () => {
   window.suivi.reglage('tri', tri);
   dessiner();
 });
+
+// Plein écran : plus de place, détails en puces
+function majGrand(actif) {
+  document.body.classList.toggle('grand', actif);
+  $('btn-grand').setAttribute('aria-pressed', String(actif));
+}
+$('btn-grand').addEventListener('click', () => window.suivi.pleinEcran(!document.body.classList.contains('grand')));
+window.suivi.onPleinEcran(majGrand);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('grand')) window.suivi.pleinEcran(false); });

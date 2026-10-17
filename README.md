@@ -44,7 +44,7 @@ Désactivé par défaut. Active-le dans le menu clic droit ou via l'engrenage �
 | `POST /actions` | `{ texte, projet? }` : ajoute une action « à toi de jouer » |
 | `DELETE /actions/:id` | retire une action |
 
-`etat` vaut `encours`, `attente`, `bloque`, `fait` ou `afaire`. `lien` (facultatif, `https://`, `http://` ou `claude://`) rend la carte cliquable. Les textes sont coupés avec « … » : titre 60 caractères, projet 40, detail 140, action 100, point 200. Détails et exemples PowerShell/curl : [skill/claude-suivi/SKILL.md](skill/claude-suivi/SKILL.md).
+`etat` vaut `encours`, `attente`, `bloque`, `fait` ou `afaire`. `points` (facultatif, liste de puces courtes) s'affiche en plein écran (bouton ⛶). `lien` (facultatif, `https://`, `http://` ou `claude://`) rend la carte cliquable. Les textes sont coupés avec « … » : titre 60 caractères, projet 40, detail 140, action 100, point 200. Détails et exemples PowerShell/curl : [skill/claude-suivi/SKILL.md](skill/claude-suivi/SKILL.md).
 
 ## Où sont les données
 

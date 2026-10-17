@@ -4,7 +4,7 @@ const path = require('path');
 const { EventEmitter } = require('events');
 
 const ETATS = ['encours', 'attente', 'bloque', 'fait', 'afaire'];
-const LIMITES = { titre: 60, projet: 40, detail: 140, texte: 100, point: 200, notes: 100000, lien: 500 };
+const LIMITES = { titre: 60, projet: 40, detail: 140, texte: 100, point: 200, notes: 100000, lien: 500, puce: 120, puces: 8 };
 
 const vide = () => ({ point: { texte: '', maj: null }, sessions: {}, actions: [], notes: '' });
 // Texte trop long : coupé avec « … » pour rester lisible dans le panneau
@@ -58,6 +58,7 @@ class Store extends EventEmitter {
       projet: coupe(d.projet ?? prev?.projet, LIMITES.projet),
       etat: d.etat ?? prev?.etat ?? 'encours',
       detail: coupe(d.detail ?? prev?.detail, LIMITES.detail),
+      points: Array.isArray(d.points) ? d.points.map((x) => coupe(x, LIMITES.puce)).filter(Boolean).slice(0, LIMITES.puces) : prev?.points || [],
       lien: d.lien !== undefined ? String(d.lien).slice(0, LIMITES.lien) : prev?.lien || '',
       maj: now,
     };

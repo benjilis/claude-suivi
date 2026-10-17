@@ -72,6 +72,9 @@ function creerServeur(store) {
           for (const k of ['titre', 'projet', 'detail', 'aToi']) {
             if (d[k] !== undefined && typeof d[k] !== 'string') return envoyer(res, 400, { erreur: `${k} doit être du texte` });
           }
+          if (d.points !== undefined && (!Array.isArray(d.points) || d.points.some((x) => typeof x !== 'string'))) {
+            return envoyer(res, 400, { erreur: 'points doit être une liste de textes' });
+          }
           if (d.lien !== undefined && (typeof d.lien !== 'string' || (d.lien && !LIEN_OK.test(d.lien)))) {
             return envoyer(res, 400, { erreur: 'lien doit commencer par https://, http:// ou claude://' });
           }

@@ -180,3 +180,15 @@ test('lien : accepté en https/claude, refusé sinon, conservé et copié dans l
   assert.equal((await appel('PUT', '/sessions/lien1', { lien: 42 })).code, 400);
   assert.equal((await appel('PUT', '/sessions/lien1', { lien: '' })).corps.lien, '');
 });
+
+test('points : liste de puces coupée, conservée, refusée si invalide', async () => {
+  let r = await appel('PUT', '/sessions/pts', { titre: 'P', points: ['a', 'b'.repeat(300), '', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] });
+  assert.equal(r.code, 200);
+  assert.equal(r.corps.points.length, 8);
+  assert.equal(r.corps.points[1].length, 120);
+  r = await appel('PUT', '/sessions/pts', { detail: 'x' });
+  assert.equal(r.corps.points.length, 8);
+  assert.equal((await appel('PUT', '/sessions/pts', { points: 'pas une liste' })).code, 400);
+  assert.equal((await appel('PUT', '/sessions/pts', { points: [1, 2] })).code, 400);
+  assert.deepEqual((await appel('PUT', '/sessions/pts', { points: [] })).corps.points, []);
+});

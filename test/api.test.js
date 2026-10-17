@@ -192,3 +192,14 @@ test('points : liste de puces coupée, conservée, refusée si invalide', async 
   assert.equal((await appel('PUT', '/sessions/pts', { points: [1, 2] })).code, 400);
   assert.deepEqual((await appel('PUT', '/sessions/pts', { points: [] })).corps.points, []);
 });
+
+test('nettoyer : retire les cartes sans mise à jour depuis plus de 1 h et leurs actions', () => {
+  const s = new Store(null);
+  s.majSession('vieille', { titre: 'V', etat: 'attente', aToi: 'Répondre' });
+  s.majSession('recente', { titre: 'R', etat: 'encours', aToi: 'Valider' });
+  s.etat.sessions.vieille.maj = new Date(Date.now() - 2 * 3600 * 1000).toISOString();
+  assert.equal(s.nettoyer(), 1);
+  assert.deepEqual(Object.keys(s.lire().sessions), ['recente']);
+  assert.deepEqual(s.lire().actions.map((a) => a.sessionId), ['recente']);
+  assert.equal(s.nettoyer(), 0);
+});

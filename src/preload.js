@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('suivi', {
   ouvrirLien: (url) => ipcRenderer.send('ouvrir-lien', url),
   pleinEcran: (actif) => ipcRenderer.send('plein-ecran', actif),
   onPleinEcran: (cb) => ipcRenderer.on('plein-ecran', (_e, actif) => cb(actif)),
+  nettoyer: () => ipcRenderer.send('nettoyer'),
   notes: (texte) => ipcRenderer.send('notes', texte),
   reglage: (cle, valeur) => ipcRenderer.send('reglage', cle, valeur),
 });

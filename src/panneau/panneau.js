@@ -171,6 +171,22 @@ function dessiner() {
   if (document.activeElement !== $('notes') && $('notes').value !== (etat.notes || '')) $('notes').value = etat.notes || '';
 }
 
+// Nettoyer : retire les cartes sans mise à jour depuis plus d'une heure (2 clics pour confirmer)
+const DELAI_NETTOYAGE = 60 * 60 * 1000;
+let minuteurNettoyer;
+const perimees = () => Object.values(etat.sessions || {}).filter((s) => Date.now() - new Date(s.maj).getTime() > DELAI_NETTOYAGE).length;
+function reinitNettoyer() { clearTimeout(minuteurNettoyer); $('btn-nettoyer').textContent = '🧹 Nettoyer'; $('btn-nettoyer').classList.remove('confirme'); }
+$('btn-nettoyer').addEventListener('click', () => {
+  const b = $('btn-nettoyer');
+  if (b.classList.contains('confirme')) { window.suivi.nettoyer(); reinitNettoyer(); return; }
+  const n = perimees();
+  if (!n) { b.textContent = 'Rien à nettoyer'; clearTimeout(minuteurNettoyer); minuteurNettoyer = setTimeout(reinitNettoyer, 2000); return; }
+  b.textContent = `Retirer ${n} carte${n > 1 ? 's' : ''} ? Confirmer`;
+  b.classList.add('confirme');
+  clearTimeout(minuteurNettoyer);
+  minuteurNettoyer = setTimeout(reinitNettoyer, 4000);
+});
+
 function majAnciennete() {
   for (const e of document.querySelectorAll('.age')) e.textContent = anciennete(e.dataset.maj);
 }

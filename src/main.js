@@ -226,6 +226,7 @@ app.whenReady().then(async () => {
   ipcMain.handle('reglages', () => lireReglages());
   ipcMain.on('cocher-action', (_e, id) => { if (typeof id === 'string') store.supprimerAction(id); });
   ipcMain.on('retirer-session', (_e, id) => { if (typeof id === 'string') store.supprimerSession(id); });
+  ipcMain.on('nettoyer', () => store.nettoyer());
   ipcMain.on('ouvrir-lien', (_e, url) => { if (typeof url === 'string' && LIEN_OK.test(url)) shell.openExternal(url); });
   ipcMain.on('notes', (_e, texte) => { if (typeof texte === 'string') store.majNotes(texte); });
   ipcMain.on('reglage', (_e, cle, valeur) => {

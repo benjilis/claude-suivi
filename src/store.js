@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { EventEmitter } = require('events');
 
+const DELAI_NETTOYAGE = 60 * 60 * 1000; // 1 heure
 const ETATS = ['encours', 'attente', 'bloque', 'fait', 'afaire'];
 const LIMITES = { titre: 60, projet: 40, detail: 140, texte: 100, point: 200, notes: 100000, lien: 500, puce: 120, puces: 8 };
 
@@ -80,6 +81,17 @@ class Store extends EventEmitter {
     return true;
   }
 
+  // Retire les cartes (et leurs actions « à toi ») sans mise à jour depuis `delaiMs`
+  nettoyer(delaiMs = DELAI_NETTOYAGE) {
+    const limite = Date.now() - delaiMs;
+    const retirees = Object.values(this.etat.sessions).filter((s) => new Date(s.maj).getTime() < limite).map((s) => s.id);
+    if (!retirees.length) return 0;
+    for (const id of retirees) delete this.etat.sessions[id];
+    this.etat.actions = this.etat.actions.filter((a) => !retirees.includes(a.sessionId));
+    this._change();
+    return retirees.length;
+  }
+
   majPoint(texte) {
     this.etat.point = { texte: coupe(texte, LIMITES.point), maj: new Date().toISOString() };
     this._change();
@@ -114,4 +126,4 @@ class Store extends EventEmitter {
   }
 }
 
-module.exports = { Store, ETATS };
+module.exports = { Store, ETATS, DELAI_NETTOYAGE };

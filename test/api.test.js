@@ -153,3 +153,30 @@ test('Store émet une alerte seulement au passage à attente/bloque', () => {
   s.majSession('a', { etat: 'bloque' });
   assert.deepEqual(alertes, ['attente', 'bloque']);
 });
+
+test('textes trop longs : coupés avec « … » aux limites', async () => {
+  const r = await appel('PUT', '/sessions/long', { titre: 'T'.repeat(100), projet: 'P'.repeat(80), detail: 'd'.repeat(500), aToi: 'a'.repeat(300) });
+  assert.equal(r.code, 200);
+  assert.equal(r.corps.titre.length, 60);
+  assert.equal(r.corps.projet.length, 40);
+  assert.equal(r.corps.detail.length, 140);
+  assert.ok(r.corps.detail.endsWith('…'));
+  const e = (await appel('GET', '/etat')).corps;
+  assert.equal(e.actions.find((a) => a.sessionId === 'long').texte.length, 100);
+  const p = await appel('PUT', '/point', { texte: 'x'.repeat(500) });
+  assert.equal(p.corps.texte.length, 200);
+});
+
+test('lien : accepté en https/claude, refusé sinon, conservé et copié dans l\'action', async () => {
+  let r = await appel('PUT', '/sessions/lien1', { titre: 'L', etat: 'attente', aToi: 'Répondre', lien: 'https://claude.ai/code/abc' });
+  assert.equal(r.code, 200);
+  assert.equal(r.corps.lien, 'https://claude.ai/code/abc');
+  r = await appel('PUT', '/sessions/lien1', { detail: 'maj' });
+  assert.equal(r.corps.lien, 'https://claude.ai/code/abc');
+  const e = (await appel('GET', '/etat')).corps;
+  assert.equal(e.actions.find((a) => a.sessionId === 'lien1').lien, 'https://claude.ai/code/abc');
+  assert.equal((await appel('PUT', '/sessions/lien1', { lien: 'javascript:alert(1)' })).code, 400);
+  assert.equal((await appel('PUT', '/sessions/lien1', { lien: 'file:///C:/Windows/System32/calc.exe' })).code, 400);
+  assert.equal((await appel('PUT', '/sessions/lien1', { lien: 42 })).code, 400);
+  assert.equal((await appel('PUT', '/sessions/lien1', { lien: '' })).corps.lien, '');
+});

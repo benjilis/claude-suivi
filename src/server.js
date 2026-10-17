@@ -4,6 +4,8 @@ const { ETATS } = require('./store');
 
 const HOTE = '127.0.0.1';
 const PORT = 4777;
+// Liens cliquables autorisés (ouverts par l'appli au clic)
+const LIEN_OK = /^(https?|claude):\/\/\S+$/i;
 const TAILLE_MAX = 64 * 1024;
 
 const estLocal = (adresse) =>
@@ -70,6 +72,9 @@ function creerServeur(store) {
           for (const k of ['titre', 'projet', 'detail', 'aToi']) {
             if (d[k] !== undefined && typeof d[k] !== 'string') return envoyer(res, 400, { erreur: `${k} doit être du texte` });
           }
+          if (d.lien !== undefined && (typeof d.lien !== 'string' || (d.lien && !LIEN_OK.test(d.lien)))) {
+            return envoyer(res, 400, { erreur: 'lien doit commencer par https://, http:// ou claude://' });
+          }
           return envoyer(res, 200, store.majSession(id, d));
         }
         if (m === 'DELETE') {
@@ -110,4 +115,4 @@ function demarrer(store, port = PORT) {
   });
 }
 
-module.exports = { creerServeur, demarrer, estLocal, hoteValide, PORT, HOTE };
+module.exports = { LIEN_OK, creerServeur, demarrer, estLocal, hoteValide, PORT, HOTE };

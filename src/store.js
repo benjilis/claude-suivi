@@ -4,10 +4,14 @@ const path = require('path');
 const { EventEmitter } = require('events');
 
 const ETATS = ['encours', 'attente', 'bloque', 'fait', 'afaire'];
-const LIMITES = { titre: 200, projet: 100, detail: 600, texte: 400, notes: 100000 };
+const LIMITES = { titre: 60, projet: 40, detail: 140, texte: 100, point: 200, notes: 100000, lien: 500 };
 
 const vide = () => ({ point: { texte: '', maj: null }, sessions: {}, actions: [], notes: '' });
-const coupe = (v, max) => String(v ?? '').slice(0, max);
+// Texte trop long : coupé avec « … » pour rester lisible dans le panneau
+const coupe = (v, max) => {
+  const t = String(v ?? '').trim();
+  return t.length > max ? t.slice(0, max - 1).trimEnd() + '…' : t;
+};
 const cle = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
 class Store extends EventEmitter {
@@ -54,13 +58,14 @@ class Store extends EventEmitter {
       projet: coupe(d.projet ?? prev?.projet, LIMITES.projet),
       etat: d.etat ?? prev?.etat ?? 'encours',
       detail: coupe(d.detail ?? prev?.detail, LIMITES.detail),
+      lien: d.lien !== undefined ? String(d.lien).slice(0, LIMITES.lien) : prev?.lien || '',
       maj: now,
     };
     this.etat.sessions[id] = s;
     if (d.aToi) {
       // une seule action « à toi » par session : la nouvelle remplace l'ancienne
       this.etat.actions = this.etat.actions.filter((a) => a.sessionId !== id);
-      this.etat.actions.push({ id: cle(), texte: coupe(d.aToi, LIMITES.texte), projet: s.projet, sessionId: id, maj: now });
+      this.etat.actions.push({ id: cle(), texte: coupe(d.aToi, LIMITES.texte), projet: s.projet, lien: s.lien, sessionId: id, maj: now });
     }
     const alerte = ['attente', 'bloque'].includes(s.etat) && prev?.etat !== s.etat ? s : null;
     this._change(alerte);
@@ -75,7 +80,7 @@ class Store extends EventEmitter {
   }
 
   majPoint(texte) {
-    this.etat.point = { texte: coupe(texte, LIMITES.detail), maj: new Date().toISOString() };
+    this.etat.point = { texte: coupe(texte, LIMITES.point), maj: new Date().toISOString() };
     this._change();
     return this.etat.point;
   }

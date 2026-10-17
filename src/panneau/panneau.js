@@ -85,6 +85,11 @@ function carte(s) {
   tete.append(gauche,el('span', `pastille e-${s.etat}`, LIBELLES[s.etat] || s.etat));
   c.append(tete);
   if (s.detail) c.append(el('p', 'detail', s.detail));
+  if (s.lien) {
+    c.classList.add('cliquable');
+    c.title = 'Ouvrir la session';
+    c.addEventListener('click', () => window.suivi.ouvrirLien(s.lien));
+  }
   const pied = el('div', 'pied');
   pied.append(el('span', null, `Mis à jour à ${heure(s.maj)}`), el('span', 'age', anciennete(s.maj)));
   pied.lastChild.dataset.maj = s.maj;
@@ -92,7 +97,7 @@ function carte(s) {
   const x = el('button', 'icone retirer', '✕');
   x.title = 'Retirer cette carte';
   x.setAttribute('aria-label', 'Retirer cette carte');
-  x.addEventListener('click', () => window.suivi.retirerSession(s.id));
+  x.addEventListener('click', (e) => { e.stopPropagation(); window.suivi.retirerSession(s.id); });
   c.append(x);
   return c;
 }
@@ -127,7 +132,9 @@ function dessiner() {
     cb.setAttribute('aria-label', 'Terminé : ' + a.texte);
     cb.addEventListener('change', () => window.suivi.cocherAction(a.id));
     const txt = el('div');
-    txt.append(el('div', null, a.texte));
+    const t = el('div', a.lien ? 'lien' : null, a.texte + (a.lien ? ' ↗' : ''));
+    if (a.lien) { t.title = 'Ouvrir la session'; t.addEventListener('click', () => window.suivi.ouvrirLien(a.lien)); }
+    txt.append(t);
     if (a.projet) txt.append(el('div', 'proj', a.projet));
     li.append(cb, txt);
     ul.append(li);

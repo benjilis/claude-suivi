@@ -1,9 +1,9 @@
 'use strict';
-const { app, BrowserWindow, Tray, Menu, Notification, nativeImage, nativeTheme, screen, ipcMain, dialog } = require('electron');
+const { shell, app, BrowserWindow, Tray, Menu, Notification, nativeImage, nativeTheme, screen, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { Store } = require('./store');
-const { demarrer, PORT } = require('./server');
+const { demarrer, PORT, LIEN_OK } = require('./server');
 
 app.setName('claude-suivi');
 app.setAppUserModelId('claude-suivi');
@@ -206,6 +206,7 @@ app.whenReady().then(async () => {
   ipcMain.handle('reglages', () => lireReglages());
   ipcMain.on('cocher-action', (_e, id) => { if (typeof id === 'string') store.supprimerAction(id); });
   ipcMain.on('retirer-session', (_e, id) => { if (typeof id === 'string') store.supprimerSession(id); });
+  ipcMain.on('ouvrir-lien', (_e, url) => { if (typeof url === 'string' && LIEN_OK.test(url)) shell.openExternal(url); });
   ipcMain.on('notes', (_e, texte) => { if (typeof texte === 'string') store.majNotes(texte); });
   ipcMain.on('reglage', (_e, cle, valeur) => {
     if (cle === 'tri') { if (['etat', 'projet', 'recent'].includes(valeur)) { reglages.tri = valeur; sauverReglages(); } return; }

@@ -167,3 +167,7 @@ textarea:focus { border-color: var(--accent); }
 .groupe::after { content: ""; flex: 1; height: 1px; background: var(--bord); }
 .groupe:first-child { margin-top: 0; }
 main > *, .carte, .carte-tete { min-width: 0; max-width: 100%; }
+.cliquable { cursor: pointer; }
+.cliquable:hover { border-color: var(--accent); }
+.actions .lien { cursor: pointer; }
+.actions .lien:hover { color: var(--accent); text-decoration: underline; }

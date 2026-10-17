@@ -4,6 +4,10 @@ const ORDRE = ['bloque', 'attente', 'encours', 'afaire', 'fait'];
 const LIBELLES = { encours: 'En cours', attente: 'Attend ta réponse', bloque: 'Bloqué', fait: 'Fait', afaire: 'À faire' };
 const JOUR = 24 * 3600 * 1000;
 
+const TRIS = ['etat', 'projet', 'recent'];
+const NOMS_TRI = { etat: 'État', projet: 'Projet', recent: 'Récent' };
+let tri = 'etat';
+
 let etat = { point: {}, sessions: {}, actions: [], notes: '' };
 
 function el(tag, classe, texte) {
@@ -93,6 +97,22 @@ function carte(s) {
   return c;
 }
 
+// Tri « Projet » : un titre par projet ; les projets avec la session la plus urgente passent en premier
+function groupes(liste) {
+  const par = new Map();
+  for (const s of liste) {
+    const nom = s.projet || 'Sans projet';
+    if (!par.has(nom)) par.set(nom, []);
+    par.get(nom).push(s);
+  }
+  const urgence = (l) => Math.min(...l.map((s) => ORDRE.indexOf(s.etat)));
+  const noeuds = [];
+  [...par.entries()].sort((a, b) => urgence(a[1]) - urgence(b[1]) || a[0].localeCompare(b[0], 'fr')).forEach(([nom, l]) => {
+    noeuds.push(el('div', 'groupe', nom), ...l.map(carte));
+  });
+  return noeuds;
+}
+
 function dessiner() {
   const p = etat.point || {};
   $('point-texte').textContent = p.texte || 'Rien à signaler pour le moment.';
@@ -121,13 +141,15 @@ function dessiner() {
   const m = $('mascotte-entete');
   if (m.dataset.humeur !== humeur) { m.dataset.humeur = humeur; m.replaceChildren(mascotte(humeur)); }
 
-  const toutes = Object.values(etat.sessions || {}).sort(
-    (a, b) => ORDRE.indexOf(a.etat) - ORDRE.indexOf(b.etat) || new Date(b.maj) - new Date(a.maj));
+  const parEtat = (a, b) => ORDRE.indexOf(a.etat) - ORDRE.indexOf(b.etat) || new Date(b.maj) - new Date(a.maj);
+  const parRecent = (a, b) => new Date(b.maj) - new Date(a.maj);
+  const toutes = Object.values(etat.sessions || {}).sort(tri === 'recent' ? parRecent : parEtat);
   const anciennes = (s) => s.etat === 'fait' && maintenant - new Date(s.maj).getTime() > JOUR;
   const actives = toutes.filter((s) => !anciennes(s));
   const terminees = toutes.filter(anciennes);
 
-  $('cartes').replaceChildren(...actives.map(carte));
+  $('cartes').replaceChildren(...(tri === 'projet' ? groupes(actives) : actives.map(carte)));
+  $('tri-nom').textContent = NOMS_TRI[tri];
   $('vide').hidden = actives.length > 0 || terminees.length > 0;
   $('cartes-termines').replaceChildren(...terminees.map(carte));
   $('termines').hidden = !terminees.length;
@@ -158,6 +180,7 @@ function appliquerReglages(r) {
   $('opt-demarrage').checked = !!r.demarrage;
   $('opt-notifications').checked = !!r.notifications;
   $('btn-epingle').setAttribute('aria-pressed', String(!!r.epingle));
+  if (TRIS.includes(r.tri) && r.tri !== tri) { tri = r.tri; dessiner(); }
 }
 $('btn-epingle').addEventListener('click', () => {
   const actif = $('btn-epingle').getAttribute('aria-pressed') !== 'true';
@@ -172,4 +195,10 @@ $('btn-reglages').addEventListener('click', () => {
   const ouvert = $('reglages').hidden;
   $('reglages').hidden = !ouvert;
   $('btn-reglages').setAttribute('aria-expanded', String(ouvert));
+});
+
+$('btn-tri').addEventListener('click', () => {
+  tri = TRIS[(TRIS.indexOf(tri) + 1) % TRIS.length];
+  window.suivi.reglage('tri', tri);
+  dessiner();
 });

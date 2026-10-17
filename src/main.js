@@ -17,7 +17,7 @@ let tray, fenetre, store, serveur;
 let pastille = false;
 let dernierMasquage = 0;
 let dernierPlacement = 0;
-let reglages = { notifications: true, epingle: false };
+let reglages = { notifications: true, epingle: false, tri: 'etat' };
 
 const fichierReglages = () => path.join(app.getPath('userData'), 'reglages.json');
 function chargerReglages() {
@@ -162,7 +162,7 @@ function confirmerEffacer() {
 function envoyerReglages() {
   if (fenetre && !fenetre.isDestroyed()) fenetre.webContents.send('reglages', lireReglages());
 }
-const lireReglages = () => ({ notifications: reglages.notifications, epingle: reglages.epingle, demarrage: lancerAuDemarrage() });
+const lireReglages = () => ({ notifications: reglages.notifications, epingle: reglages.epingle, tri: reglages.tri, demarrage: lancerAuDemarrage() });
 
 // ---- Démarrage ----
 app.on('second-instance', () => { if (fenetre) ouvrir(); });
@@ -208,6 +208,7 @@ app.whenReady().then(async () => {
   ipcMain.on('retirer-session', (_e, id) => { if (typeof id === 'string') store.supprimerSession(id); });
   ipcMain.on('notes', (_e, texte) => { if (typeof texte === 'string') store.majNotes(texte); });
   ipcMain.on('reglage', (_e, cle, valeur) => {
+    if (cle === 'tri') { if (['etat', 'projet', 'recent'].includes(valeur)) { reglages.tri = valeur; sauverReglages(); } return; }
     if (typeof valeur !== 'boolean') return;
     if (cle === 'epingle') { reglages.epingle = valeur; sauverReglages(); }
     if (cle === 'notifications') { reglages.notifications = valeur; sauverReglages(); }

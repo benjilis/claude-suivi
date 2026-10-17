@@ -160,3 +160,9 @@ textarea {
 }
 textarea:focus { border-color: var(--accent); }
 [hidden] { display: none !important; }
+
+.tri { -webkit-app-region: no-drag; border: 0; background: transparent; color: var(--discret); font: inherit; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+.tri:hover { background: var(--bord); color: var(--texte); }
+.groupe { margin: 10px 0 6px; font-size: 12px; font-weight: 600; color: var(--texte); display: flex; align-items: center; gap: 6px; }
+.groupe::after { content: ""; flex: 1; height: 1px; background: var(--bord); }
+.groupe:first-child { margin-top: 0; }

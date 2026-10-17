@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out/
+*.log
+etat.json
+etat.json.tmp
+reglages.json
+.env

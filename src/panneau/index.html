@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+  <title>Claude Suivi</title>
+  <link rel="stylesheet" href="panneau.css">
+</head>
+<body>
+  <header>
+    <h1>Claude Suivi</h1>
+    <button id="btn-epingle" class="icone" title="Garder le panneau ouvert quand je clique ailleurs" aria-label="Garder le panneau ouvert" aria-pressed="false">📌</button>
+    <button id="btn-reglages" class="icone" title="Réglages" aria-label="Réglages" aria-expanded="false">⚙</button>
+  </header>
+  <section id="reglages" hidden>
+    <label><input type="checkbox" id="opt-demarrage"> Lancer au démarrage de Windows</label>
+    <label><input type="checkbox" id="opt-notifications"> Notifications Windows</label>
+  </section>
+
+  <main id="contenu">
+    <section class="point">
+      <h2>Le point</h2>
+      <p id="point-texte" class="point-texte"></p>
+      <p id="point-maj" class="discret"></p>
+    </section>
+
+    <section id="bloc-actions" hidden>
+      <h2>À toi de jouer <span id="nb-actions" class="compteur"></span></h2>
+      <ul id="actions" class="actions"></ul>
+    </section>
+
+    <section>
+      <h2>Sessions</h2>
+      <div id="cartes"></div>
+      <p id="vide" class="discret" hidden>Aucune session pour le moment.</p>
+      <details id="termines" hidden>
+        <summary>Terminés <span id="nb-termines" class="compteur"></span></summary>
+        <div id="cartes-termines"></div>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <label for="notes">Bloc-notes</label>
+    <textarea id="notes" rows="3" placeholder="Tes notes…" spellcheck="false"></textarea>
+  </footer>
+  <script src="panneau.js"></script>
+</body>
+</html>

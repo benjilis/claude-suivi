@@ -1,0 +1,16 @@
+﻿{
+  "name": "claude-suivi",
+  "version": "1.0.0",
+  "description": "Panneau de la zone de notification pour suivre ses sessions Claude en parallèle",
+  "main": "src/main.js",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test \"test/*.test.js\"",
+    "install-skill": "powershell -NoProfile -ExecutionPolicy Bypass -File install-skill.ps1"
+  },
+  "devDependencies": {
+    "electron": "44.9.0"
+  }
+}

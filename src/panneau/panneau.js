@@ -23,14 +23,43 @@ function anciennete(iso) {
   return `il y a ${Math.floor(s / 86400)} j`;
 }
 
+const SVG = 'http://www.w3.org/2000/svg';
+function mascotte(etat) {
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('class', `mascotte m-${etat}`);
+  svg.setAttribute('aria-hidden', 'true');
+  const forme = (parent, classe, x, y, w, h, rx = 0) => {
+    const r = document.createElementNS(SVG, 'rect');
+    r.setAttribute('class', classe);
+    Object.entries({ x, y, width: w, height: h, rx }).forEach(([k, v]) => r.setAttribute(k, v));
+    parent.append(r);
+  };
+  const tout = document.createElementNS(SVG, 'g');
+  tout.setAttribute('class', 'tout');
+  forme(tout, 'membre bras-g', 0.5, 11, 3, 4, 1);
+  forme(tout, 'membre bras-d', 20.5, 11, 3, 4, 1);
+  forme(tout, 'membre', 6, 18, 3, 4, 1);
+  forme(tout, 'membre', 15, 18, 3, 4, 1);
+  forme(tout, 'corps', 3, 7, 18, 12, 3);
+  forme(tout, 'oeil', 8, 10.5, 2.2, 4, 1);
+  forme(tout, 'oeil', 13.8, 10.5, 2.2, 4, 1);
+  svg.append(tout);
+  for (let i = 0; i < 3; i++) forme(svg, 'bulle', 15 + i * 3, 1.5, 1.8, 1.8, 0.9);
+  return svg;
+}
+
 function carte(s) {
   const c = el('article', `carte e-${s.etat}`);
   const tete = el('div', 'carte-tete');
-  const gauche = el('div');
-  gauche.style.minWidth = '0';
-  gauche.append(el('div', 'titre', s.titre));
-  if (s.projet) gauche.append(el('div', 'projet', s.projet));
-  tete.append(gauche, el('span', `pastille e-${s.etat}`, LIBELLES[s.etat] || s.etat));
+  const gauche = el('div', 'carte-gauche');
+  const texte = el('div');
+  texte.style.minWidth = '0';
+  texte.append(el('div', 'titre', s.titre));
+  if (s.projet) texte.append(el('div', 'projet', s.projet));
+  if (s.etat === 'encours') gauche.append(mascotte('encours'));
+  gauche.append(texte);
+  tete.append(gauche,el('span', `pastille e-${s.etat}`, LIBELLES[s.etat] || s.etat));
   c.append(tete);
   if (s.detail) c.append(el('p', 'detail', s.detail));
   const pied = el('div', 'pied');
@@ -68,6 +97,11 @@ function dessiner() {
   $('nb-actions').textContent = (etat.actions || []).length || '';
 
   const maintenant = Date.now();
+  const etats = Object.values(etat.sessions || {}).map((s) => s.etat);
+  const humeur = ['bloque', 'attente', 'encours'].find((x) => etats.includes(x)) || 'repos';
+  const m = $('mascotte-entete');
+  if (m.dataset.humeur !== humeur) { m.dataset.humeur = humeur; m.replaceChildren(mascotte(humeur)); }
+
   const toutes = Object.values(etat.sessions || {}).sort(
     (a, b) => ORDRE.indexOf(a.etat) - ORDRE.indexOf(b.etat) || new Date(b.maj) - new Date(a.maj));
   const anciennes = (s) => s.etat === 'fait' && maintenant - new Date(s.maj).getTime() > JOUR;

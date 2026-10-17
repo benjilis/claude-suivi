@@ -16,6 +16,7 @@ const HAUTEUR = 560;
 let tray, fenetre, store, serveur;
 let pastille = false;
 let dernierMasquage = 0;
+let dernierPlacement = 0;
 let reglages = { notifications: true, epingle: false };
 
 const fichierReglages = () => path.join(app.getPath('userData'), 'reglages.json');
@@ -68,7 +69,7 @@ function majIcone() {
 // ---- Panneau ----
 function creerFenetre() {
   fenetre = new BrowserWindow({
-    width: LARGEUR, height: HAUTEUR, show: false, frame: false, resizable: false, movable: false,
+    width: LARGEUR, height: HAUTEUR, show: false, frame: false, resizable: false, movable: true,
     minimizable: false, maximizable: false, fullscreenable: false, skipTaskbar: true, alwaysOnTop: true,
     roundedCorners: true,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#262624' : '#FAF9F5',
@@ -80,6 +81,18 @@ function creerFenetre() {
   fenetre.webContents.on('will-navigate', (e) => e.preventDefault());
   fenetre.on('blur', () => { if (!reglages.epingle && fenetre.isVisible()) { fenetre.hide(); dernierMasquage = Date.now(); } });
   fenetre.on('show', () => envoyerEtat());
+  // Déplacé à la main : on retient l'endroit (fin du déplacement, après une courte pause)
+  let minuteurPosition;
+  fenetre.on('move', () => {
+    if (Date.now() - dernierPlacement < 800) return; // placement automatique, pas un déplacement
+    clearTimeout(minuteurPosition);
+    minuteurPosition = setTimeout(() => {
+      if (!fenetre.isVisible()) return;
+      const [x, y] = fenetre.getPosition();
+      reglages.position = { x, y };
+      sauverReglages();
+    }, 400);
+  });
 }
 
 function positionner() {
@@ -94,8 +107,21 @@ function positionner() {
   fenetre.setPosition(x, y, false);
 }
 
+// Position choisie par l'utilisateur (panneau déplacé), valable seulement si elle est encore sur un écran
+function positionMemorisee() {
+  const p = reglages.position;
+  if (!p || typeof p.x !== 'number' || typeof p.y !== 'number') return null;
+  const visible = screen.getAllDisplays().some((d) => {
+    const z = d.workArea;
+    return p.x >= z.x - LARGEUR + 60 && p.x <= z.x + z.width - 60 && p.y >= z.y && p.y <= z.y + z.height - 60;
+  });
+  return visible ? p : null;
+}
+
 function ouvrir() {
-  positionner();
+  const p = reglages.epingle ? positionMemorisee() : null;
+  dernierPlacement = Date.now();
+  if (p) fenetre.setPosition(p.x, p.y, false); else positionner();
   fenetre.show();
   fenetre.focus();
   if (pastille) { pastille = false; majIcone(); }

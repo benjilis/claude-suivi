@@ -199,3 +199,16 @@ body.grand textarea { min-height: 90px; }
 .nettoyer { border: 0; background: transparent; color: var(--discret); font: inherit; font-size: 11.5px; text-transform: none; letter-spacing: 0; padding: 2px 8px; border-radius: 6px; cursor: pointer; }
 .nettoyer:hover { background: var(--bord); color: var(--texte); }
 .nettoyer.confirme { background: var(--bloque); color: #fff; font-weight: 600; }
+
+/* Claude qui chill (logo de l'en-tête) : lunettes, sourire, il se balance doucement, ♪ qui monte */
+.mascotte .lunette { fill: #1f1410; }
+.mascotte .reflet { fill: #f5f4ee; opacity: .8; }
+.mascotte .bouche { fill: #1f1410; }
+.sym-chill { color: var(--discret); }
+.m-chill .tout { animation: balance 2.4s steps(1) infinite; }
+.m-chill .bras-g { animation: detente 2.4s steps(1) infinite; }
+.m-chill .bras-d { animation: detente 2.4s steps(1) infinite reverse; }
+.m-chill .jambe-b { animation: patte 2.4s steps(1) infinite; }
+.m-chill .sym { animation: monte 2.4s steps(3) infinite; }
+@keyframes balance { 0% { transform: translateX(-.8px) rotate(-2deg); } 50% { transform: translateX(.8px) rotate(2deg); } }
+@keyframes detente { 0% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }

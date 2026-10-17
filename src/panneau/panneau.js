@@ -35,6 +35,7 @@ const GLYPHES = {
   bloque: [".#.", ".#.", ".#.", "...", ".#."],
   fait: ["....#", "...#.", "#.#..", ".#..."],
   afaire: ["###", "..#", ".#.", "#..", "###"],
+  chill: [".##", ".#.", ".#.", "##.", "##."],
 };
 function mascotte(etat) {
   const svg = document.createElementNS(SVG, "svg");
@@ -61,9 +62,19 @@ function mascotte(etat) {
   forme(tout, "membre bras bras-g", 0, 5, 4, 3);
   forme(tout, "membre bras bras-d", 20, 5, 4, 3);
   forme(tout, "corps", 4, 2, 16, 9);
-  const yeux = g(tout, "yeux");
-  forme(yeux, "oeil", 7, 5, 2, 3);
-  forme(yeux, "oeil", 15, 5, 2, 3);
+  if (etat === "chill") {
+    // lunettes de soleil + petit sourire
+    forme(tout, "lunette", 6, 5, 5, 3);
+    forme(tout, "lunette", 13, 5, 5, 3);
+    forme(tout, "lunette", 11, 5.5, 2, 1);
+    forme(tout, "reflet", 7, 5.5, 1, 1);
+    forme(tout, "reflet", 14, 5.5, 1, 1);
+    forme(tout, "bouche", 10, 9, 4, 1);
+  } else {
+    const yeux = g(tout, "yeux");
+    forme(yeux, "oeil", 7, 5, 2, 3);
+    forme(yeux, "oeil", 15, 5, 2, 3);
+  }
   if (etat === "encours") for (let i = 0; i < 3; i++) forme(svg, "bulle", 14 + i * 3.5, -4.5, 2, 2);
   if (GLYPHES[etat]) {
     const sym = g(svg, `sym sym-${etat}`);
@@ -149,10 +160,8 @@ function dessiner() {
   $('nb-actions').textContent = (etat.actions || []).length || '';
 
   const maintenant = Date.now();
-  const etats = Object.values(etat.sessions || {}).map((s) => s.etat);
-  const humeur = ['bloque', 'attente', 'encours'].find((x) => etats.includes(x)) || 'repos';
   const m = $('mascotte-entete');
-  if (m.dataset.humeur !== humeur) { m.dataset.humeur = humeur; m.replaceChildren(mascotte(humeur)); }
+  if (!m.firstChild) m.append(mascotte('chill'));
 
   const parEtat = (a, b) => ORDRE.indexOf(a.etat) - ORDRE.indexOf(b.etat) || new Date(b.maj) - new Date(a.maj);
   const parRecent = (a, b) => new Date(b.maj) - new Date(a.maj);

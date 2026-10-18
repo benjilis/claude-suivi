@@ -214,3 +214,28 @@ test('activité : journal automatique, ajout manuel, validation', async () => {
   for (let i = 0; i < 60; i++) s.ajouterActivite('n' + i, 'p');
   assert.equal(s.lire().activite.length, 50);
 });
+
+test('To do : ménage automatique quand la session reprend, se termine ou est supprimée', () => {
+  const s = new Store(null);
+  s.majSession('a', { titre: 'A', etat: 'attente', aToi: 'Choisir A ou B' });
+  s.ajouterAction('Relancer les tests', 'p', 'a');
+  s.ajouterAction('Rappel libre', 'p');
+  assert.equal(s.lire().actions.length, 3);
+  s.majSession('a', { etat: 'encours' }); // l'utilisateur a répondu : la question part
+  assert.deepEqual(s.lire().actions.map((x) => x.texte), ['Relancer les tests', 'Rappel libre']);
+  s.majSession('a', { etat: 'fait' }); // fini : les rappels liés partent, le libre reste
+  assert.deepEqual(s.lire().actions.map((x) => x.texte), ['Rappel libre']);
+  s.ajouterAction('Lié', 'p', 'a');
+  s.supprimerSession('a');
+  assert.deepEqual(s.lire().actions.map((x) => x.texte), ['Rappel libre']);
+  s.majSession('b', { etat: 'attente', aToi: 'Q' });
+  s.majSession('b', { aToi: '' }); // chaîne vide : efface la question
+  assert.equal(s.lire().actions.length, 1);
+});
+
+test('POST /actions accepte session et refuse un type invalide', async () => {
+  const r = await appel('POST', '/actions', { texte: 'Lié à une session', session: 'abc' });
+  assert.equal(r.code, 201);
+  assert.equal(r.corps.sessionId, 'abc');
+  assert.equal((await appel('POST', '/actions', { texte: 'x', session: 5 })).code, 400);
+});

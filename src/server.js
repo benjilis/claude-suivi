@@ -98,7 +98,8 @@ function creerServeur(store) {
           const d = await lireCorps(req);
           if (typeof d.texte !== 'string' || !d.texte.trim()) return envoyer(res, 400, { erreur: 'texte requis' });
           if (d.projet !== undefined && typeof d.projet !== 'string') return envoyer(res, 400, { erreur: 'projet doit être du texte' });
-          return envoyer(res, 201, store.ajouterAction(d.texte, d.projet));
+          if (d.session !== undefined && typeof d.session !== 'string') return envoyer(res, 400, { erreur: 'session doit être du texte' });
+          return envoyer(res, 201, store.ajouterAction(d.texte, d.projet, d.session));
         }
         if (id && m === 'DELETE') {
           return store.supprimerAction(id) ? envoyer(res, 200, { ok: true }) : envoyer(res, 404, { erreur: 'introuvable' });

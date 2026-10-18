@@ -72,10 +72,16 @@ class Store extends EventEmitter {
     if (!prev || prev.etat !== s.etat || (d.detail !== undefined && prev.detail !== s.detail)) {
       this._noter({ sessionId: id, titre: s.titre, projet: s.projet, etat: s.etat, texte: s.detail || LIB_ETAT[s.etat] });
     }
-    if (d.aToi) {
-      // une seule action « à toi » par session : la nouvelle remplace l'ancienne
-      this.etat.actions = this.etat.actions.filter((a) => a.sessionId !== id);
-      this.etat.actions.push({ id: cle(), texte: coupe(d.aToi, LIMITES.texte), projet: s.projet, lien: s.lien, sessionId: id, maj: now });
+    // Ménage automatique du To do : la question posée (aToi) disparaît quand la session reprend
+    // ou se termine ; tous les rappels liés à la session disparaissent quand elle est « fait ».
+    if (prev && prev.etat !== s.etat) {
+      if (s.etat === 'fait') this.etat.actions = this.etat.actions.filter((a) => a.sessionId !== id);
+      else if (s.etat === 'encours') this.etat.actions = this.etat.actions.filter((a) => !(a.sessionId === id && a.question));
+    }
+    if (d.aToi !== undefined) {
+      // une seule question « à toi » par session : la nouvelle remplace l'ancienne ("" l'efface)
+      this.etat.actions = this.etat.actions.filter((a) => !(a.sessionId === id && a.question));
+      if (d.aToi) this.etat.actions.push({ id: cle(), texte: coupe(d.aToi, LIMITES.texte), projet: s.projet, lien: s.lien, sessionId: id, question: true, maj: now });
     }
     const alerte = ['attente', 'bloque'].includes(s.etat) && prev?.etat !== s.etat ? s : null;
     this._change(alerte);
@@ -85,6 +91,7 @@ class Store extends EventEmitter {
   supprimerSession(id) {
     if (!this.etat.sessions[id]) return false;
     delete this.etat.sessions[id];
+    this.etat.actions = this.etat.actions.filter((a) => a.sessionId !== id);
     this._change();
     return true;
   }
@@ -115,8 +122,9 @@ class Store extends EventEmitter {
     return this.etat.activite[0];
   }
 
-  ajouterAction(texte, projet) {
+  ajouterAction(texte, projet, sessionId) {
     const a = { id: cle(), texte: coupe(texte, LIMITES.texte), projet: coupe(projet, LIMITES.projet), maj: new Date().toISOString() };
+    if (sessionId) a.sessionId = coupe(sessionId, 100);
     this.etat.actions.push(a);
     this._change();
     return a;

@@ -86,13 +86,8 @@ test('DELETE /sessions/:id', async () => {
   assert.equal((await appel('DELETE', '/sessions/s2')).code, 404);
 });
 
-test('PUT /point', async () => {
-  const r = await appel('PUT', '/point', { texte: 'Tout va bien' });
-  assert.equal(r.code, 200);
-  const e = (await appel('GET', '/etat')).corps;
-  assert.equal(e.point.texte, 'Tout va bien');
-  assert.ok(e.point.maj);
-  assert.equal((await appel('PUT', '/point', {})).code, 400);
+test('la route /point n\'existe plus', async () => {
+  assert.equal((await appel('PUT', '/point', { texte: 'x' })).code, 404);
 });
 
 test('POST /actions et DELETE /actions/:id', async () => {
@@ -110,7 +105,7 @@ test('route inconnue et méthode non gérée -> 404', async () => {
 });
 
 test('corps trop gros -> 413', async () => {
-  const r = await appel('PUT', '/point', { texte: 'a'.repeat(70 * 1024) }).catch(() => ({ code: 413 }));
+  const r = await appel('PUT', '/sessions/gros', { detail: 'a'.repeat(70 * 1024) }).catch(() => ({ code: 413 }));
   assert.equal(r.code, 413);
 });
 
@@ -120,7 +115,6 @@ test('persistance : un nouveau Store relit etat.json', async () => {
   assert.equal(brut.sessions.persist.titre, 'Persistant');
   const autre = new Store(fichier);
   assert.equal(autre.lire().sessions.persist.etat, 'bloque');
-  assert.equal(autre.lire().point.texte, 'Tout va bien');
 });
 
 test('fichier d\'état corrompu -> état vide sans planter', () => {
@@ -163,8 +157,6 @@ test('textes trop longs : coupés avec « … » aux limites', async () => {
   assert.ok(r.corps.detail.endsWith('…'));
   const e = (await appel('GET', '/etat')).corps;
   assert.equal(e.actions.find((a) => a.sessionId === 'long').texte.length, 100);
-  const p = await appel('PUT', '/point', { texte: 'x'.repeat(500) });
-  assert.equal(p.corps.texte.length, 200);
 });
 
 test('lien : accepté en https/claude, refusé sinon, conservé et copié dans l\'action', async () => {

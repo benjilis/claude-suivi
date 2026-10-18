@@ -85,12 +85,6 @@ function creerServeur(store) {
         }
       }
 
-      if (ressource === 'point' && !id && m === 'PUT') {
-        const d = await lireCorps(req);
-        if (typeof d.texte !== 'string') return envoyer(res, 400, { erreur: 'texte requis' });
-        return envoyer(res, 200, store.majPoint(d.texte));
-      }
-
       if (ressource === 'activite' && !id && m === 'POST') {
         const d = await lireCorps(req);
         if (typeof d.texte !== 'string' || !d.texte.trim()) return envoyer(res, 400, { erreur: 'texte requis' });

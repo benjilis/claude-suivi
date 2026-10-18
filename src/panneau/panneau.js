@@ -8,7 +8,7 @@ const TRIS = ['etat', 'projet', 'recent'];
 const NOMS_TRI = { etat: 'État', projet: 'Projet', recent: 'Récent' };
 let tri = 'etat';
 
-let etat = { point: {}, sessions: {}, actions: [], notes: '' };
+let etat = { sessions: {}, actions: [], notes: '' };
 
 function el(tag, classe, texte) {
   const e = document.createElement(tag);
@@ -183,10 +183,6 @@ function groupes(liste) {
 }
 
 function dessiner() {
-  const p = etat.point || {};
-  $('point-texte').textContent = p.texte || 'Rien à signaler pour le moment.';
-  $('point-maj').textContent = p.maj ? `Mis à jour à ${heure(p.maj)}` : '';
-
   // To do : de simples cartes-rappels (rien à cocher), retirées d'un clic sur ✕
   const todo = etat.actions || [];
   $('cartes-todo').replaceChildren(...todo.map(carteTodo));

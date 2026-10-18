@@ -5,13 +5,13 @@ const { EventEmitter } = require('events');
 
 const DELAI_NETTOYAGE = 60 * 60 * 1000; // 1 heure
 const ETATS = ['encours', 'attente', 'bloque', 'fait', 'afaire'];
-const LIMITES = { titre: 60, projet: 40, detail: 140, texte: 100, point: 200, notes: 100000, lien: 500, puce: 120, puces: 8 };
+const LIMITES = { titre: 60, projet: 40, detail: 140, texte: 100, notes: 100000, lien: 500, puce: 120, puces: 8 };
 
 const LIB_ETAT = { encours: 'En cours', attente: 'Attend ta réponse', bloque: 'Bloqué', fait: 'Fait', afaire: 'À faire' };
 const MAX_ACTIVITE = 50;
 const AGE_ACTIVITE = 24 * 3600 * 1000;
 
-const vide = () => ({ point: { texte: '', maj: null }, sessions: {}, actions: [], activite: [], notes: '' });
+const vide = () => ({ sessions: {}, actions: [], activite: [], notes: '' });
 // Texte trop long : coupé avec « … » pour rester lisible dans le panneau
 const coupe = (v, max) => {
   const t = String(v ?? '').trim();
@@ -113,12 +113,6 @@ class Store extends EventEmitter {
     this._noter({ sessionId: '', titre: coupe(projet, LIMITES.projet), projet: coupe(projet, LIMITES.projet), etat: etat || '', texte: coupe(texte, LIMITES.detail) });
     this._change();
     return this.etat.activite[0];
-  }
-
-  majPoint(texte) {
-    this.etat.point = { texte: coupe(texte, LIMITES.point), maj: new Date().toISOString() };
-    this._change();
-    return this.etat.point;
   }
 
   ajouterAction(texte, projet) {

@@ -173,7 +173,7 @@ function menu() {
 function confirmerEffacer() {
   const r = dialog.showMessageBoxSync({
     type: 'question', buttons: ['Tout effacer', 'Annuler'], defaultId: 1, cancelId: 1,
-    title: 'Claude Suivi', message: 'Effacer toutes les cartes, actions et le point ?', detail: 'Ton bloc-notes est conservé.',
+    title: 'Claude Suivi', message: 'Effacer toutes les cartes, les rappels et le journal ?', detail: 'Ton bloc-notes est conservé.',
   });
   if (r === 0) store.toutEffacer();
 }

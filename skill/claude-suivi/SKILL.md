@@ -43,7 +43,7 @@ N'appelle pas à chaque commande : seulement aux changements qui comptent.
 | `points` | (facultatif) 3 à 6 puces très courtes (120 caractères max chacune) : ce qui est fait, en cours, à venir. Visibles seulement quand l'utilisateur ouvre le panneau en plein écran. Remplace la liste précédente ; omis = inchangé |
 | `lien` | (facultatif) lien cliquable qui ouvre la session : `https://…` ou `claude://…`. **Ne l'invente jamais** : mets-le seulement si tu connais l'adresse exacte, sinon omet le champ. `""` l'efface |
 
-**Textes courts, lisibles d'un coup d'œil** (le surplus est coupé avec « … ») : `titre` 60 caractères, `projet` 40, `detail` 140, `aToi` 100, `point` 200. Écris des phrases brèves, sans détails techniques.
+**Textes courts, lisibles d'un coup d'œil** (le surplus est coupé avec « … ») : `titre` 60 caractères, `projet` 40, `detail` 140, `aToi` 100. Écris des phrases brèves, sans détails techniques.
 
 **Id stable** : `projet-sujet` en minuscules sans espaces ni accents (ex. `mon-site-accueil`). Garde **le même id** pendant toute la session pour mettre à jour la même carte. L'id va dans l'URL, jamais d'espaces.
 
@@ -51,7 +51,7 @@ Exemple de puces (PowerShell) : `@{ points = @('✔ Tests écrits', '… Page d 
 
 ## Activité et To do (deux onglets du panneau)
 
-Sous « Le point », le panneau a une barre de deux onglets :
+Le panneau a une barre de deux onglets :
 
 - **Activité** : toutes les cartes de sessions (ce que tu mets avec `PUT /sessions/:id`). Dessous, un « Journal récent » replié (heure, session, état, phrase) qui **se remplit tout seul** à chaque `PUT /sessions/:id` qui change l'état ou le `detail` : pas d'appel en plus. Pour noter un fait qui n'est pas un changement de carte (build vert, fichier livré, décision prise) : `POST /activite` avec `{ "texte": "...", "projet": "...", "etat": "fait" }` (`projet` et `etat` facultatifs ; texte 140 caractères max ; 50 entrées gardées, 24 h).
 - **To do** : des cartes-rappels (du texte, pas une checklist) : les petites choses **à faire traiter par Claude dans la foulée** que l'utilisateur risque d'oublier (relancer un test, mettre à jour la doc, répondre à quelqu'un, vérifier un résultat). **C'est à toi de le remplir** : dès que tu repères une tâche de suivi, ajoute-la avec `POST /actions` `{ "texte": "...", "projet": "..." }` (100 caractères max, une action = une chose concrète, à l'impératif : « Relancer les tests »). Le `aToi` d'une carte atterrit aussi ici. L'utilisateur la retire d'un clic sur ✕ ; si tu l'as faite toi-même, retire-la avec `DELETE /actions/:id` (l'id est renvoyé par le POST, ou dans `GET /etat` → `actions`). Pas de doublons : lis `GET /etat` avant d'ajouter si tu n'es pas sûr.
@@ -74,7 +74,7 @@ curl -s -m 3 -X POST http://127.0.0.1:4777/actions -H 'Content-Type: application
 JSON
 ```
 
-Autres routes : `DELETE /sessions/:id`, `PUT /point` `{ "texte": "..." }` (résumé global d'une phrase), `POST /actions`, `DELETE /actions/:id`, `POST /activite`, `GET /etat`.
+Autres routes : `DELETE /sessions/:id`, `POST /actions`, `DELETE /actions/:id`, `POST /activite`, `GET /etat`.
 
 ## Exemples PowerShell (accents corrects : corps envoyé en octets UTF-8)
 
@@ -88,13 +88,6 @@ J'attends l'utilisateur :
 ```powershell
 $corps = @{ etat = 'attente'; detail = 'Deux maquettes possibles.'; aToi = 'Choisir la maquette A ou B' } | ConvertTo-Json
 Invoke-RestMethod -Method Put -Uri 'http://127.0.0.1:4777/sessions/mon-site-accueil' -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($corps)) -TimeoutSec 3 | Out-Null
-```
-
-Le résumé global :
-
-```powershell
-$corps = @{ texte = '3 chantiers : 1 en cours, 1 attend ta réponse.' } | ConvertTo-Json
-Invoke-RestMethod -Method Put -Uri 'http://127.0.0.1:4777/point' -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($corps)) -TimeoutSec 3 | Out-Null
 ```
 
 (Les champs omis dans `PUT /sessions/:id` gardent leur valeur précédente : pour passer à « fait », `@{ etat = 'fait' }` suffit.)

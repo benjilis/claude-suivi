@@ -1,6 +1,6 @@
 # Claude Suivi
 
-Petite appli Windows (Electron) qui vit dans la zone de notification et montre d'un coup d'œil ce que font tes sessions Claude en parallèle : le point, les actions qui t'attendent, une carte par session, un bloc-notes.
+Petite appli Windows (Electron) qui vit dans la zone de notification et montre d'un coup d'œil ce que font tes sessions Claude en parallèle : une carte par session (onglet Activité), des rappels à faire traiter par Claude (onglet To do), un journal récent, un bloc-notes.
 
 Les sessions Claude la mettent à jour toutes seules grâce à un *skill* qui appelle une petite API locale.
 
@@ -40,12 +40,11 @@ Désactivé par défaut. Active-le dans le menu clic droit ou via l'engrenage �
 | `GET /etat` | tout l'état en JSON |
 | `PUT /sessions/:id` | crée/met à jour une carte : `{ titre, projet, etat, detail, aToi? }` |
 | `DELETE /sessions/:id` | supprime une carte |
-| `PUT /point` | `{ texte }` : le résumé en haut du panneau |
 | `POST /actions` | `{ texte, projet? }` : ajoute un rappel dans l'onglet **To do** (cartes de texte à faire traiter par Claude) |
 | `DELETE /actions/:id` | retire un élément du To do |
 | `POST /activite` | `{ texte, projet?, etat? }` : ajoute une ligne à l'onglet **Activité** (qui se remplit aussi toute seule à chaque mise à jour de carte) |
 
-`etat` vaut `encours`, `attente`, `bloque`, `fait` ou `afaire`. `points` (facultatif, liste de puces courtes) s'affiche en plein écran (bouton ⛶). `lien` (facultatif, `https://`, `http://` ou `claude://`) rend la carte cliquable. Les textes sont coupés avec « … » : titre 60 caractères, projet 40, detail 140, action 100, point 200. Détails et exemples PowerShell/curl : [skill/claude-suivi/SKILL.md](skill/claude-suivi/SKILL.md).
+`etat` vaut `encours`, `attente`, `bloque`, `fait` ou `afaire`. `points` (facultatif, liste de puces courtes) s'affiche en plein écran (bouton ⛶). `lien` (facultatif, `https://`, `http://` ou `claude://`) rend la carte cliquable. Les textes sont coupés avec « … » : titre 60 caractères, projet 40, detail 140, action 100. Détails et exemples PowerShell/curl : [skill/claude-suivi/SKILL.md](skill/claude-suivi/SKILL.md).
 
 ## Où sont les données
 

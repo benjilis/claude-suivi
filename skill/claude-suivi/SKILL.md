@@ -117,7 +117,8 @@ JSON
 ## Usage (onglet « Usage » du panneau)
 
 - **Tokens par jour et par session : rien à faire.** L'appli les calcule toute seule, en local, à partir des journaux de Claude Code (elle ne lit jamais le contenu des conversations).
-- **Limites du forfait (5 h, hebdomadaire, crédit supplémentaire) : c'est à toi de les pousser**, si tu as l'outil `get_usage` (session lancée depuis l'app Claude). Appelle-le, puis envoie le résultat tel quel : `plan.windows` → `limites`, `plan.extraUsage` → `extra`. Fais-le au démarrage de ta session puis environ toutes les 30 minutes ou à chaque grande étape, **pas plus souvent**. Si `get_usage` est absent ou ne renvoie pas `status: "ok"`, ne fais rien.
+- **Limites du forfait (5 h, hebdomadaire) : normalement automatiques.** Une « ligne d'état » Claude Code (`npm run install-statusline` dans le dépôt) les envoie à l'appli à chaque réponse de n'importe quelle session. **Avant de pousser quoi que ce soit, lis `GET /etat` → `limites.maj`** : si elle date de moins de 10 minutes, ne fais rien.
+- **Secours (si `limites.maj` est plus vieille que 10 minutes ou absente)** : si tu as l'outil `get_usage` (session lancée depuis l'app Claude), appelle-le puis envoie le résultat tel quel : `plan.windows` → `limites`, `plan.extraUsage` → `extra` (le crédit supplémentaire n'est connu que par cette voie). Au démarrage de ta session, puis environ toutes les 30 minutes au plus. Si `get_usage` est absent ou ne renvoie pas `status: "ok"`, ne fais rien.
 
 ```powershell
 $corps = @{

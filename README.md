@@ -17,6 +17,7 @@ npm start
 ```
 
 - `npm run install-skill` copie le skill dans `%USERPROFILE%\.claude\skills\claude-suivi\`.
+- `npm run install-statusline` (facultatif, recommandé) branche les limites du forfait sur l'onglet Usage.
 - Ensuite, on peut aussi lancer l'appli avec le raccourci **`Lancer Claude Suivi.bat`**.
 
 ## Utilisation
@@ -51,7 +52,7 @@ Désactivé par défaut. Active-le dans le menu clic droit ou via l'engrenage �
 ## Suivi de l'utilisation (onglet Usage)
 
 - **Tokens par jour (7 jours) et par session** : calculés en local en lisant les journaux de Claude Code (`~/.claude/projects/**/*.jsonl`, ou `$CLAUDE_CONFIG_DIR`). Seuls les compteurs de tokens, le titre, le dossier et les horodatages sont lus, jamais le contenu des conversations. Comptés : entrée + sortie + écriture du cache.
-- **Limites du forfait (5 h, hebdomadaire)** : ces chiffres n'existent que côté Claude ; c'est une session lancée depuis l'app Claude qui les envoie (`PUT /usage`, voir le skill).
+- **Limites du forfait (5 h, hebdomadaire)** : Claude Code les donne à sa « ligne d'état » à chaque réponse. `npm run install-statusline` ajoute dans `~/.claude/settings.json` une ligne d'état (`statusline/claude-suivi-statusline.js`) qui les transmet à l'appli (`PUT /usage`) : l'onglet Usage reste à jour tout seul, pour tous les forfaits Pro/Max. Elle n'écrase jamais une ligne d'état déjà configurée ; `npm run install-statusline -- -Retirer` l'enlève. Secours : une session peut aussi pousser les limites elle-même (voir le skill).
 
 ## Où sont les données
 

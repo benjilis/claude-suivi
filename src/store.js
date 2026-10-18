@@ -189,7 +189,8 @@ class Store extends EventEmitter {
         percentUsed: nombre(w.percentUsed),
         resetsAt: typeof w.resetsAt === 'string' && !Number.isNaN(Date.parse(w.resetsAt)) ? new Date(w.resetsAt).toISOString() : '',
       })),
-      extra: d.extra && typeof d.extra === 'object'
+      // sans « extra » dans l'envoi (la ligne d'état n'en connaît pas), on garde le dernier connu
+      extra: d.extra === undefined ? (this.etat.limites?.extra ?? null) : d.extra && typeof d.extra === 'object'
         ? { percentUsed: nombre(d.extra.percentUsed), spent: coupe(d.extra.spent, 20), monthlyLimit: coupe(d.extra.monthlyLimit, 20), currency: coupe(d.extra.currency, 5) }
         : null,
     };

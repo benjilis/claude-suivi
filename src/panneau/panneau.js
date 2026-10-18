@@ -7,6 +7,9 @@ const JOUR = 24 * 3600 * 1000;
 const TRIS = ['etat', 'projet', 'recent'];
 const NOMS_TRI = { etat: 'État', projet: 'Projet', recent: 'Récent' };
 let tri = 'etat';
+let ongletActif = 'activite';
+// Dans « To do », le tri « État » veut dire « ordre d'ajout »
+const NOMS_TRI_TODO = { etat: 'Ajout', projet: 'Projet', recent: 'Récent' };
 
 let etat = { sessions: {}, actions: [], notes: '' };
 
@@ -182,10 +185,27 @@ function groupes(liste) {
   return noeuds;
 }
 
+// Tri des rappels du To do : ajout (le plus ancien d'abord), projet (groupes A→Z), récent (le plus récent d'abord)
+function rappelsTries(liste) {
+  const parDate = (a, b) => new Date(a.maj) - new Date(b.maj);
+  if (tri === 'recent') return liste.slice().sort((a, b) => parDate(b, a)).map(carteTodo);
+  if (tri === 'projet') {
+    const par = new Map();
+    for (const a of liste.slice().sort(parDate)) {
+      const nom = a.projet || 'Sans projet';
+      if (!par.has(nom)) par.set(nom, []);
+      par.get(nom).push(a);
+    }
+    const ordre = [...par.keys()].sort((a, b) => (a === 'Sans projet') - (b === 'Sans projet') || a.localeCompare(b, 'fr'));
+    return ordre.flatMap((nom) => [el('div', 'groupe', nom), ...par.get(nom).map(carteTodo)]);
+  }
+  return liste.slice().sort(parDate).map(carteTodo);
+}
+
 function dessiner() {
   // To do : de simples cartes-rappels (rien à cocher), retirées d'un clic sur ✕
   const todo = etat.actions || [];
-  $('cartes-todo').replaceChildren(...todo.map(carteTodo));
+  $('cartes-todo').replaceChildren(...rappelsTries(todo));
   $('todo-vide').hidden = todo.length > 0;
   $('nb-actions').textContent = todo.length || '';
 
@@ -215,7 +235,7 @@ function dessiner() {
   const terminees = toutes.filter(anciennes);
 
   $('cartes').replaceChildren(...(tri === 'projet' ? groupes(actives) : actives.map(carte)));
-  $('tri-nom').textContent = NOMS_TRI[tri];
+  $('tri-nom').textContent = (ongletActif === 'todo' ? NOMS_TRI_TODO : NOMS_TRI)[tri];
   $('nb-activite').textContent = actives.length || '';
   $('vide').hidden = actives.length > 0 || terminees.length > 0;
   $('cartes-termines').replaceChildren(...terminees.map(carte));
@@ -301,6 +321,8 @@ function choisirOnglet(nom) {
     $('onglet-' + n).setAttribute('aria-selected', String(n === nom));
     $('vue-' + n).hidden = n !== nom;
   }
+  ongletActif = nom;
+  dessiner();
   try { localStorage.setItem('onglet', nom); } catch { /* pas grave */ }
 }
 $('onglet-activite').addEventListener('click', () => choisirOnglet('activite'));

@@ -243,3 +243,29 @@ body.grand textarea { min-height: 90px; }
 .ev.e-fait { --c: var(--fait); } .ev.e-afaire { --c: var(--afaire); }
 body.grand #cartes-todo { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; align-items: start; }
 body.grand .barre-onglets { max-width: 460px; }
+
+/* Onglet Usage */
+#vue-usage h2.espace { margin-top: 16px; }
+.jauge { margin-bottom: 10px; }
+.jauge-tete { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
+.piste { height: 8px; border-radius: 4px; background: var(--bord); overflow: hidden; }
+.rempli { height: 100%; border-radius: 4px; }
+.rempli.bas { background: var(--fait); } .rempli.moyen { background: var(--attente); } .rempli.haut { background: var(--bloque); }
+.totaux { display: flex; gap: 16px; font-size: 12px; color: var(--discret); margin-bottom: 8px; }
+.totaux b { color: var(--texte); font-size: 13px; margin-left: 4px; }
+.graph-jours { display: flex; align-items: flex-end; gap: 6px; height: 112px; padding: 6px 4px 0; background: var(--carte); border: 1px solid var(--bord); border-radius: 10px; }
+.col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; min-width: 0; }
+.col .barre { width: 70%; max-width: 34px; background: var(--discret); opacity: .55; border-radius: 3px 3px 0 0; }
+.col.aujourdhui .barre { background: var(--accent); opacity: 1; }
+.col .val { font-size: 10px; color: var(--discret); white-space: nowrap; }
+.col .jour { font-size: 11px; color: var(--discret); padding-bottom: 4px; }
+.usage-ligne { padding-bottom: 8px; }
+.usage-nb { text-align: right; flex: none; display: grid; }
+.usage-nb b { font-size: 13px; }
+.spark { display: flex; align-items: flex-end; gap: 2px; height: 20px; margin-top: 6px; }
+.spark i { display: block; width: 8px; background: var(--accent); opacity: .8; border-radius: 1px; }
+.part { height: 3px; background: var(--bord); border-radius: 2px; margin-top: 6px; }
+.part div { height: 100%; background: var(--encours); border-radius: 2px; }
+.note { margin-top: 10px; font-size: 11px; }
+body.grand #usage-sessions { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; }
+body.grand #usage-sessions .carte { margin: 0; }

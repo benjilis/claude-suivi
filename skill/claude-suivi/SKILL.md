@@ -74,7 +74,7 @@ curl -s -m 3 -X POST http://127.0.0.1:4777/actions -H 'Content-Type: application
 JSON
 ```
 
-Autres routes : `DELETE /sessions/:id`, `POST /actions`, `DELETE /actions/:id`, `POST /activite`, `GET /etat`.
+Autres routes : `DELETE /sessions/:id`, `POST /actions`, `DELETE /actions/:id`, `POST /activite`, `PUT /usage`, `GET /etat`.
 
 ## Exemples PowerShell (accents corrects : corps envoyé en octets UTF-8)
 
@@ -113,6 +113,30 @@ JSON
 - **Jamais de secrets** (mots de passe, clés API, tokens, contenu de fichiers .env) dans aucun champ.
 - Pas de données personnelles inutiles : titres et détails courts et factuels.
 - Une erreur de l'API (non 2xx, délai dépassé) : ignore-la et continue ton travail.
+
+## Usage (onglet « Usage » du panneau)
+
+- **Tokens par jour et par session : rien à faire.** L'appli les calcule toute seule, en local, à partir des journaux de Claude Code (elle ne lit jamais le contenu des conversations).
+- **Limites du forfait (5 h, hebdomadaire, crédit supplémentaire) : c'est à toi de les pousser**, si tu as l'outil `get_usage` (session lancée depuis l'app Claude). Appelle-le, puis envoie le résultat tel quel : `plan.windows` → `limites`, `plan.extraUsage` → `extra`. Fais-le au démarrage de ta session puis environ toutes les 30 minutes ou à chaque grande étape, **pas plus souvent**. Si `get_usage` est absent ou ne renvoie pas `status: "ok"`, ne fais rien.
+
+```powershell
+$corps = @{
+  limites = @(
+    @{ label = '5-hour limit'; percentUsed = 90; resetsAt = '2026-10-18T02:50:00.220Z' },
+    @{ label = 'Weekly · all models'; percentUsed = 4; resetsAt = '2026-10-25T00:00:00.220Z' }
+  )
+  extra = @{ percentUsed = 10; spent = '4.25'; monthlyLimit = '40.00'; currency = 'EUR' }
+} | ConvertTo-Json -Depth 5
+Invoke-RestMethod -Method Put -Uri 'http://127.0.0.1:4777/usage' -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($corps)) -TimeoutSec 3 | Out-Null
+```
+
+```bash
+curl -s -m 3 -X PUT http://127.0.0.1:4777/usage -H 'Content-Type: application/json; charset=utf-8' --data-binary @- >/dev/null <<'JSON'
+{"limites":[{"label":"5-hour limit","percentUsed":90,"resetsAt":"2026-10-18T02:50:00.220Z"},{"label":"Weekly · all models","percentUsed":4,"resetsAt":"2026-10-25T00:00:00.220Z"}],"extra":{"percentUsed":10,"spent":"4.25","monthlyLimit":"40.00","currency":"EUR"}}
+JSON
+```
+
+Les chiffres des limites sont ceux du compte (communs à toutes les sessions) : une seule session à jour suffit.
 
 ## Pièges de guillemets
 

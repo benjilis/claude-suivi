@@ -24,6 +24,7 @@
     <nav class="barre-onglets" role="tablist">
       <button id="onglet-activite" class="onglet" role="tab" aria-selected="true" aria-controls="vue-activite">Activité <span id="nb-activite" class="nb"></span></button>
       <button id="onglet-todo" class="onglet" role="tab" aria-selected="false" aria-controls="vue-todo">To do <span id="nb-actions" class="nb"></span></button>
+      <button id="onglet-usage" class="onglet" role="tab" aria-selected="false" aria-controls="vue-usage">Usage</button>
     </nav>
 
     <section id="vue-activite" role="tabpanel">
@@ -45,6 +46,18 @@
       <h2>À faire traiter par Claude</h2>
       <div id="cartes-todo"></div>
       <p id="todo-vide" class="discret">Rien à faire dans la foulée.</p>
+    </section>
+    <section id="vue-usage" role="tabpanel" hidden>
+      <h2>Limites du forfait</h2>
+      <div id="limites"></div>
+      <p id="limites-vide" class="discret">Pas encore de données : une session de l'app Claude doit les envoyer (voir le skill).</p>
+      <h2 class="espace">Tokens · 7 derniers jours</h2>
+      <div class="totaux"><span>Semaine <b id="tok-semaine">–</b></span><span>5 dernières heures <b id="tok-5h">–</b></span></div>
+      <div id="graph-jours" class="graph-jours" role="img" aria-label="Tokens par jour sur 7 jours"></div>
+      <h2 class="espace">Par session</h2>
+      <div id="usage-sessions"></div>
+      <p id="usage-vide" class="discret" hidden>Aucune activité Claude Code détectée cette semaine.</p>
+      <p class="discret note">Calculé en local depuis les journaux de Claude Code : entrée + sortie + cache écrit (la lecture du cache n'est pas comptée). Rien ne quitte ton PC.</p>
     </section>
   </main>
 

@@ -11,7 +11,7 @@ const LIB_ETAT = { encours: 'En cours', attente: 'Attend ta réponse', bloque: '
 const MAX_ACTIVITE = 50;
 const AGE_ACTIVITE = 24 * 3600 * 1000;
 
-const vide = () => ({ sessions: {}, actions: [], activite: [], notes: '' });
+const vide = () => ({ sessions: {}, actions: [], activite: [], limites: null, notes: '' });
 // Texte trop long : coupé avec « … » pour rester lisible dans le panneau
 const coupe = (v, max) => {
   const t = String(v ?? '').trim();
@@ -144,9 +144,27 @@ class Store extends EventEmitter {
     this.sauver();
   }
 
+  // Limites du forfait (5 h, hebdomadaire…) : une session qui sait les lire les pousse ici
+  majLimites(d) {
+    const nombre = (v) => Math.min(Math.max(Number(v) || 0, 0), 999);
+    this.etat.limites = {
+      maj: new Date().toISOString(),
+      fenetres: (d.limites || []).slice(0, 6).map((w) => ({
+        label: coupe(w.label, 40),
+        percentUsed: nombre(w.percentUsed),
+        resetsAt: typeof w.resetsAt === 'string' && !Number.isNaN(Date.parse(w.resetsAt)) ? new Date(w.resetsAt).toISOString() : '',
+      })),
+      extra: d.extra && typeof d.extra === 'object'
+        ? { percentUsed: nombre(d.extra.percentUsed), spent: coupe(d.extra.spent, 20), monthlyLimit: coupe(d.extra.monthlyLimit, 20), currency: coupe(d.extra.currency, 5) }
+        : null,
+    };
+    this._change();
+    return this.etat.limites;
+  }
+
   toutEffacer() {
-    const notes = this.etat.notes;
-    this.etat = { ...vide(), notes };
+    const { notes, limites } = this.etat;
+    this.etat = { ...vide(), notes, limites };
     this._change();
   }
 }

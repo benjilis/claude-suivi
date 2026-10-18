@@ -85,6 +85,16 @@ function creerServeur(store) {
         }
       }
 
+      if (ressource === 'usage' && !id && m === 'PUT') {
+        const d = await lireCorps(req);
+        const bon = (w) => w && typeof w === 'object' && typeof w.label === 'string' && Number.isFinite(Number(w.percentUsed));
+        if (!Array.isArray(d.limites) || !d.limites.every(bon)) {
+          return envoyer(res, 400, { erreur: 'limites doit être une liste de { label, percentUsed, resetsAt? }' });
+        }
+        if (d.extra !== undefined && (d.extra === null || typeof d.extra !== 'object')) return envoyer(res, 400, { erreur: 'extra doit être un objet' });
+        return envoyer(res, 200, store.majLimites(d));
+      }
+
       if (ressource === 'activite' && !id && m === 'POST') {
         const d = await lireCorps(req);
         if (typeof d.texte !== 'string' || !d.texte.trim()) return envoyer(res, 400, { erreur: 'texte requis' });

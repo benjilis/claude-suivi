@@ -8,6 +8,8 @@ const TRIS = ['etat', 'projet', 'recent'];
 const NOMS_TRI = { etat: 'État', projet: 'Projet', recent: 'Récent' };
 let tri = 'etat';
 let ongletActif = 'activite';
+let usage = null;
+const JOURS_COURTS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 // Dans « To do », le tri « État » veut dire « ordre d'ajout »
 const NOMS_TRI_TODO = { etat: 'Ajout', projet: 'Projet', recent: 'Récent' };
 
@@ -208,6 +210,7 @@ function dessiner() {
   $('cartes-todo').replaceChildren(...rappelsTries(todo));
   $('todo-vide').hidden = todo.length > 0;
   $('nb-actions').textContent = todo.length || '';
+  if (ongletActif === 'usage') dessinerUsage();
 
   // Activité : journal des dernières mises à jour des sessions
   const journal = etat.activite || [];
@@ -316,15 +319,108 @@ window.suivi.onPleinEcran(majGrand);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('grand')) window.suivi.pleinEcran(false); });
 
 // Onglets Activité / To do (le choix est retenu)
+const ONGLETS = ['activite', 'todo', 'usage'];
 function choisirOnglet(nom) {
-  for (const n of ['activite', 'todo']) {
+  for (const n of ONGLETS) {
     $('onglet-' + n).setAttribute('aria-selected', String(n === nom));
     $('vue-' + n).hidden = n !== nom;
   }
   ongletActif = nom;
+  $('btn-tri').hidden = nom === 'usage';
   dessiner();
+  if (nom === 'usage') dessinerUsage();
   try { localStorage.setItem('onglet', nom); } catch { /* pas grave */ }
 }
 $('onglet-activite').addEventListener('click', () => choisirOnglet('activite'));
 $('onglet-todo').addEventListener('click', () => choisirOnglet('todo'));
-try { choisirOnglet(localStorage.getItem('onglet') === 'todo' ? 'todo' : 'activite'); } catch { /* défaut : activité */ }
+$('onglet-usage').addEventListener('click', () => choisirOnglet('usage'));
+try { const o = localStorage.getItem('onglet'); choisirOnglet(ONGLETS.includes(o) ? o : 'activite'); } catch { /* défaut : activité */ }
+
+// ---- Onglet Usage : limites du forfait (poussées par les sessions) + tokens locaux
+// (voir « let usage » en haut du fichier)
+
+function tok(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace('.', ',') + ' M';
+  if (n >= 1e3) return Math.round(n / 1e3) + ' k';
+  return String(n);
+}
+
+function dans(iso) {
+  const s = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
+  if (!iso || Number.isNaN(s)) return '';
+  if (s <= 0) return 'réinitialisée';
+  const j = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+  if (j) return `dans ${j} j ${h} h`;
+  if (h) return `dans ${h} h ${String(m).padStart(2, '0')}`;
+  return `dans ${m} min`;
+}
+
+function jauge(label, pct, droite, sous) {
+  const c = el('div', 'jauge');
+  const tete = el('div', 'jauge-tete');
+  tete.append(el('span', null, label), el('b', null, `${Math.round(pct)} %`));
+  const piste = el('div', 'piste');
+  const rempli = el('div', `rempli ${pct >= 85 ? 'haut' : pct >= 60 ? 'moyen' : 'bas'}`);
+  rempli.style.width = Math.min(pct, 100) + '%';
+  piste.append(rempli);
+  c.append(tete, piste);
+  if (droite || sous) c.append(el('div', 'discret', [droite, sous].filter(Boolean).join(' · ')));
+  return c;
+}
+
+function dessinerUsage() {
+  const lim = etat.limites;
+  const blocs = [];
+  if (lim && (lim.fenetres || []).length) {
+    for (const w of lim.fenetres) blocs.push(jauge(w.label, w.percentUsed, w.resetsAt ? 'Réinitialisation ' + dans(w.resetsAt) : ''));
+    if (lim.extra) blocs.push(jauge('Crédit supplémentaire', lim.extra.percentUsed, `${lim.extra.spent} / ${lim.extra.monthlyLimit} ${lim.extra.currency}`));
+    blocs.push(el('p', 'discret note', `Mis à jour ${anciennete(lim.maj)}`));
+  }
+  $('limites').replaceChildren(...blocs);
+  $('limites-vide').hidden = blocs.length > 0;
+
+  if (!usage) return;
+  $('tok-semaine').textContent = tok(usage.semaine);
+  $('tok-5h').textContent = tok(usage.cinqHeures);
+  const max = Math.max(1, ...usage.jours.map((j) => j.tokens));
+  $('graph-jours').replaceChildren(...usage.jours.map((j, i) => {
+    const [a, m, d] = j.date.split('-').map(Number);
+    const col = el('div', 'col' + (i === usage.jours.length - 1 ? ' aujourdhui' : ''));
+    const barre = el('div', 'barre');
+    barre.style.height = Math.max(j.tokens ? 3 : 1, Math.round((j.tokens / max) * 70)) + 'px';
+    barre.title = `${j.date} : ${j.tokens.toLocaleString('fr-FR')} tokens`;
+    col.append(el('span', 'val', j.tokens ? tok(j.tokens) : ''), barre, el('span', 'jour', JOURS_COURTS[new Date(a, m - 1, d).getDay()]));
+    return col;
+  }));
+
+  const plus = Math.max(1, ...usage.sessions.map((s) => s.tokens));
+  $('usage-sessions').replaceChildren(...usage.sessions.map((s) => {
+    const c = el('article', 'carte usage-ligne');
+    const tete = el('div', 'carte-tete');
+    const g = el('div');
+    g.style.minWidth = '0';
+    g.append(el('div', 'titre', s.titre));
+    g.append(el('div', 'projet', [s.projet, anciennete(s.derniere)].filter(Boolean).join(' · ')));
+    const d = el('div', 'usage-nb');
+    d.append(el('b', null, tok(s.tokens)));
+    if (s.tokens5h) d.append(el('span', 'discret', `${tok(s.tokens5h)} en 5 h`));
+    tete.append(g, d);
+    const spark = el('div', 'spark');
+    const mj = Math.max(1, ...s.parJour);
+    s.parJour.forEach((v) => {
+      const b = el('i');
+      b.style.height = Math.max(v ? 2 : 1, Math.round((v / mj) * 18)) + 'px';
+      spark.append(b);
+    });
+    const part = el('div', 'part');
+    const p = el('div');
+    p.style.width = Math.max(2, Math.round((s.tokens / plus) * 100)) + '%';
+    part.append(p);
+    c.append(tete, spark, part);
+    return c;
+  }));
+  $('usage-vide').hidden = usage.sessions.length > 0;
+}
+
+window.suivi.onUsage((u) => { usage = u; if (ongletActif === 'usage') dessinerUsage(); });
+window.suivi.usage().then((u) => { usage = u; if (ongletActif === 'usage') dessinerUsage(); });

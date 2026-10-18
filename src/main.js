@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { Store } = require('./store');
 const { demarrer, PORT, LIEN_OK } = require('./server');
+const { SuiviUsage } = require('./usage');
 
 app.setName('claude-suivi');
 app.setAppUserModelId('claude-suivi');
@@ -13,7 +14,7 @@ if (!app.requestSingleInstanceLock()) app.quit();
 const LARGEUR = 380;
 const HAUTEUR = 560;
 
-let tray, fenetre, store, serveur;
+let tray, fenetre, store, serveur, suiviUsage;
 let pastille = false;
 let dernierMasquage = 0;
 let dernierPlacement = 0;
@@ -94,7 +95,7 @@ function creerFenetre() {
   fenetre.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   fenetre.webContents.on('will-navigate', (e) => e.preventDefault());
   fenetre.on('blur', () => { if (!reglages.epingle && !pleinEcran && fenetre.isVisible()) { fenetre.hide(); dernierMasquage = Date.now(); } });
-  fenetre.on('show', () => envoyerEtat());
+  fenetre.on('show', () => { envoyerEtat(); if (suiviUsage) fenetre.webContents.send('usage', suiviUsage.resume()); });
   // Déplacé à la main : on retient l'endroit (fin du déplacement, après une courte pause)
   let minuteurPosition;
   const retenirGeometrie = () => {
@@ -179,6 +180,15 @@ function basculer() {
   ouvrir();
 }
 
+// Analyse locale des journaux Claude Code (toutes les minutes, seulement ce qui a été ajouté)
+let analyseEnCours = false;
+async function analyserUsage() {
+  if (analyseEnCours || !suiviUsage) return;
+  analyseEnCours = true;
+  try { await suiviUsage.scanner(); } catch { /* dossier absent : pas de suivi, pas d'erreur */ } finally { analyseEnCours = false; }
+  if (fenetre && !fenetre.isDestroyed()) fenetre.webContents.send('usage', suiviUsage.resume());
+}
+
 function envoyerEtat() {
   if (!fenetre || fenetre.isDestroyed()) return;
   fenetre.webContents.send('etat', store.lire());
@@ -226,7 +236,10 @@ app.whenReady().then(async () => {
     return;
   }
 
+  suiviUsage = new SuiviUsage();
   creerFenetre();
+  analyserUsage();
+  setInterval(analyserUsage, 60 * 1000);
   tray = new Tray(creerIcone(false));
   majIcone();
   tray.on('click', basculer);
@@ -250,6 +263,7 @@ app.whenReady().then(async () => {
 
   ipcMain.on('plein-ecran', (_e, actif) => { if (typeof actif === 'boolean') basculerPleinEcran(actif); });
   ipcMain.handle('etat', () => store.lire());
+  ipcMain.handle('usage', () => suiviUsage.resume());
   ipcMain.handle('reglages', () => lireReglages());
   ipcMain.on('cocher-action', (_e, id) => { if (typeof id === 'string') store.supprimerAction(id); });
   ipcMain.on('retirer-session', (_e, id) => { if (typeof id === 'string') store.supprimerSession(id); });

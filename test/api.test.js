@@ -239,3 +239,22 @@ test('POST /actions accepte session et refuse un type invalide', async () => {
   assert.equal(r.corps.sessionId, 'abc');
   assert.equal((await appel('POST', '/actions', { texte: 'x', session: 5 })).code, 400);
 });
+
+test('PUT /usage : limites du forfait enregistrées, validées, conservées après « Tout effacer »', async () => {
+  const bonnes = { limites: [{ label: '5-hour limit', percentUsed: 90, resetsAt: '2026-10-18T02:50:00.220Z' }, { label: 'Weekly', percentUsed: 4 }], extra: { percentUsed: 10, spent: '4.25', monthlyLimit: '40.00', currency: 'EUR' } };
+  const r = await appel('PUT', '/usage', bonnes);
+  assert.equal(r.code, 200);
+  assert.equal(r.corps.fenetres.length, 2);
+  assert.equal(r.corps.fenetres[0].resetsAt, '2026-10-18T02:50:00.220Z');
+  assert.equal(r.corps.extra.spent, '4.25');
+  const e = (await appel('GET', '/etat')).corps;
+  assert.equal(e.limites.fenetres[1].percentUsed, 4);
+  assert.equal((await appel('PUT', '/usage', {})).code, 400);
+  assert.equal((await appel('PUT', '/usage', { limites: [{ label: 'x', percentUsed: 'abc' }] })).code, 400);
+  assert.equal((await appel('PUT', '/usage', { limites: [], extra: 5 })).code, 400);
+  const s = new Store(null);
+  s.majLimites({ limites: [{ label: 'a', percentUsed: 250 }] });
+  assert.equal(s.lire().limites.fenetres[0].percentUsed, 250 > 999 ? 999 : 250);
+  s.toutEffacer();
+  assert.ok(s.lire().limites);
+});

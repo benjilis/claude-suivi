@@ -227,6 +227,13 @@ app.on('window-all-closed', () => { /* l'appli vit dans la zone de notification 
 app.whenReady().then(async () => {
   chargerReglages();
   store = new Store(path.join(app.getPath('userData'), 'etat.json'));
+  if (store.lectureSeule) {
+    dialog.showErrorBox('Claude Suivi : données illisibles',
+      `Le fichier de données n'a pas pu être lu (${store.erreurChargement?.code || store.erreurChargement?.message}).\n\nPar sécurité, rien ne sera enregistré pour l'instant : ton fichier reste intact :\n${path.join(app.getPath('userData'), 'etat.json')}\n\nQuitte puis relance l'appli. Si ça recommence, des copies de secours « etat.sauvegarde-… » sont dans le même dossier.`);
+  }
+  store.on('erreur', (e) => {
+    if (Notification.isSupported()) new Notification({ title: 'Claude Suivi : enregistrement impossible', body: String(e.code || e.message).slice(0, 120), silent: true }).show();
+  });
 
   try {
     serveur = await demarrer(store, PORT);

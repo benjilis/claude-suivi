@@ -27,24 +27,59 @@ class Store extends EventEmitter {
     this.charger();
   }
 
+  // Fichier absent = premier lancement. Fichier présent mais illisible (verrouillé, corrompu…) :
+  // on réessaie, puis on passe en lecture seule pour ne JAMAIS écraser les données par un état vide.
   charger() {
-    try {
-      const brut = JSON.parse(fs.readFileSync(this.fichier, 'utf8'));
-      this.etat = { ...vide(), ...brut };
-      if (!Array.isArray(this.etat.actions)) this.etat.actions = [];
-      if (!Array.isArray(this.etat.activite)) this.etat.activite = [];
-      if (!this.etat.sessions || typeof this.etat.sessions !== 'object') this.etat.sessions = {};
-    } catch {
-      this.etat = vide();
+    if (!this.fichier) return;
+    let erreur = null;
+    for (let essai = 0; essai < 4; essai++) {
+      try {
+        const brut = JSON.parse(fs.readFileSync(this.fichier, 'utf8'));
+        this.etat = { ...vide(), ...brut };
+        if (!Array.isArray(this.etat.actions)) this.etat.actions = [];
+        if (!Array.isArray(this.etat.activite)) this.etat.activite = [];
+        if (!this.etat.sessions || typeof this.etat.sessions !== 'object') this.etat.sessions = {};
+        this._sauvegarderLeFichier();
+        return;
+      } catch (e) {
+        if (e.code === 'ENOENT') { this.etat = vide(); return; }
+        erreur = e;
+        if (essai < 3) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
+      }
     }
+    this.etat = vide();
+    this.erreurChargement = erreur;
+    this.lectureSeule = true;
+  }
+
+  // Copie de secours à chaque lancement (5 gardées) : un incident ne coûte jamais tout l'historique.
+  _sauvegarderLeFichier() {
+    try {
+      const dossier = path.dirname(this.fichier);
+      const base = path.basename(this.fichier, '.json');
+      const contenu = fs.readFileSync(this.fichier);
+      if (!this.etat.actions.length && !Object.keys(this.etat.sessions).length) return; // rien à protéger
+      const copies = fs.readdirSync(dossier).filter((n) => n.startsWith(base + '.sauvegarde-')).sort();
+      const derniere = copies[copies.length - 1];
+      if (derniere && fs.readFileSync(path.join(dossier, derniere)).equals(contenu)) return;
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, '0');
+      const nom = `${base}.sauvegarde-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.json`;
+      fs.writeFileSync(path.join(dossier, nom), contenu);
+      for (const vieille of [...copies, nom].sort().slice(0, -5)) fs.rmSync(path.join(dossier, vieille), { force: true });
+    } catch { /* la copie de secours est un bonus : jamais bloquante */ }
   }
 
   sauver() {
-    if (!this.fichier) return;
-    fs.mkdirSync(path.dirname(this.fichier), { recursive: true });
-    const tmp = this.fichier + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(this.etat, null, 2), 'utf8');
-    fs.renameSync(tmp, this.fichier);
+    if (!this.fichier || this.lectureSeule) return;
+    try {
+      fs.mkdirSync(path.dirname(this.fichier), { recursive: true });
+      const tmp = this.fichier + '.tmp';
+      fs.writeFileSync(tmp, JSON.stringify(this.etat, null, 2), 'utf8');
+      fs.renameSync(tmp, this.fichier);
+    } catch (e) {
+      this.emit('erreur', e); // l'appli continue en mémoire ; l'utilisateur est prévenu par main.js
+    }
   }
 
   _change(alerte) {

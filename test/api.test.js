@@ -258,3 +258,37 @@ test('PUT /usage : limites du forfait enregistrées, validées, conservées apr�
   s.toutEffacer();
   assert.ok(s.lire().limites);
 });
+
+test('fichier illisible : lecture seule, le fichier existant n\'est jamais écrasé', () => {
+  const f = path.join(dossier, 'protege.json');
+  fs.writeFileSync(f, '{"sessions": {"a": ');
+  const s = new Store(f);
+  assert.equal(s.lectureSeule, true);
+  s.majSession('x', { titre: 'X' });
+  assert.equal(fs.readFileSync(f, 'utf8'), '{"sessions": {"a": ');
+});
+
+test('fichier absent : premier lancement normal, enregistrement actif', () => {
+  const f = path.join(dossier, 'neuf.json');
+  const s = new Store(f);
+  assert.equal(s.lectureSeule, undefined);
+  s.majSession('x', { titre: 'X' });
+  assert.equal(JSON.parse(fs.readFileSync(f, 'utf8')).sessions.x.titre, 'X');
+});
+
+test('sauvegardes de secours au chargement : copie, pas de doublon, 5 gardées', () => {
+  const f = path.join(dossier, 'secours.json');
+  const s1 = new Store(f);
+  s1.majSession('a', { titre: 'A' });
+  new Store(f); // charge un fichier non vide : une copie
+  new Store(f); // même contenu : pas de nouvelle copie
+  const copies = () => fs.readdirSync(dossier).filter((n) => n.startsWith('secours.sauvegarde-'));
+  assert.equal(copies().length, 1);
+  for (let i = 0; i < 8; i++) {
+    fs.writeFileSync(path.join(dossier, `secours.sauvegarde-20200101-00${10 + i}.json`), '{}');
+  }
+  const s2 = new Store(f);
+  s2.majSession('b', { titre: 'B' });
+  new Store(f);
+  assert.ok(copies().length <= 5);
+});

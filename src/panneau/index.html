@@ -27,9 +27,19 @@
       <p id="point-maj" class="discret"></p>
     </section>
 
-    <section id="bloc-actions" hidden>
-      <h2>À toi de jouer <span id="nb-actions" class="compteur"></span></h2>
-      <ul id="actions" class="actions"></ul>
+    <section id="bloc-suivi">
+      <div class="onglets" role="tablist">
+        <button id="onglet-activite" class="onglet" role="tab" aria-selected="true" aria-controls="vue-activite">Activité <span id="nb-activite" class="compteur"></span></button>
+        <button id="onglet-todo" class="onglet" role="tab" aria-selected="false" aria-controls="vue-todo">To do <span id="nb-actions" class="compteur"></span></button>
+      </div>
+      <div id="vue-activite" class="vue" role="tabpanel">
+        <ul id="activite" class="activite"></ul>
+        <p id="activite-vide" class="discret">Rien de récent.</p>
+      </div>
+      <div id="vue-todo" class="vue" role="tabpanel" hidden>
+        <ul id="actions" class="actions"></ul>
+        <p id="todo-vide" class="discret">Rien à faire dans la foulée.</p>
+      </div>
     </section>
 
     <section>

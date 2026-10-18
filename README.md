@@ -41,8 +41,9 @@ Désactivé par défaut. Active-le dans le menu clic droit ou via l'engrenage �
 | `PUT /sessions/:id` | crée/met à jour une carte : `{ titre, projet, etat, detail, aToi? }` |
 | `DELETE /sessions/:id` | supprime une carte |
 | `PUT /point` | `{ texte }` : le résumé en haut du panneau |
-| `POST /actions` | `{ texte, projet? }` : ajoute une action « à toi de jouer » |
-| `DELETE /actions/:id` | retire une action |
+| `POST /actions` | `{ texte, projet? }` : ajoute un élément à l'onglet **To do** |
+| `DELETE /actions/:id` | retire un élément du To do |
+| `POST /activite` | `{ texte, projet?, etat? }` : ajoute une ligne à l'onglet **Activité** (qui se remplit aussi toute seule à chaque mise à jour de carte) |
 
 `etat` vaut `encours`, `attente`, `bloque`, `fait` ou `afaire`. `points` (facultatif, liste de puces courtes) s'affiche en plein écran (bouton ⛶). `lien` (facultatif, `https://`, `http://` ou `claude://`) rend la carte cliquable. Les textes sont coupés avec « … » : titre 60 caractères, projet 40, detail 140, action 100, point 200. Détails et exemples PowerShell/curl : [skill/claude-suivi/SKILL.md](skill/claude-suivi/SKILL.md).
 

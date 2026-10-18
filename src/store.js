@@ -7,7 +7,11 @@ const DELAI_NETTOYAGE = 60 * 60 * 1000; // 1 heure
 const ETATS = ['encours', 'attente', 'bloque', 'fait', 'afaire'];
 const LIMITES = { titre: 60, projet: 40, detail: 140, texte: 100, point: 200, notes: 100000, lien: 500, puce: 120, puces: 8 };
 
-const vide = () => ({ point: { texte: '', maj: null }, sessions: {}, actions: [], notes: '' });
+const LIB_ETAT = { encours: 'En cours', attente: 'Attend ta réponse', bloque: 'Bloqué', fait: 'Fait', afaire: 'À faire' };
+const MAX_ACTIVITE = 50;
+const AGE_ACTIVITE = 24 * 3600 * 1000;
+
+const vide = () => ({ point: { texte: '', maj: null }, sessions: {}, actions: [], activite: [], notes: '' });
 // Texte trop long : coupé avec « … » pour rester lisible dans le panneau
 const coupe = (v, max) => {
   const t = String(v ?? '').trim();
@@ -28,6 +32,7 @@ class Store extends EventEmitter {
       const brut = JSON.parse(fs.readFileSync(this.fichier, 'utf8'));
       this.etat = { ...vide(), ...brut };
       if (!Array.isArray(this.etat.actions)) this.etat.actions = [];
+      if (!Array.isArray(this.etat.activite)) this.etat.activite = [];
       if (!this.etat.sessions || typeof this.etat.sessions !== 'object') this.etat.sessions = {};
     } catch {
       this.etat = vide();
@@ -64,6 +69,9 @@ class Store extends EventEmitter {
       maj: now,
     };
     this.etat.sessions[id] = s;
+    if (!prev || prev.etat !== s.etat || (d.detail !== undefined && prev.detail !== s.detail)) {
+      this._noter({ sessionId: id, titre: s.titre, projet: s.projet, etat: s.etat, texte: s.detail || LIB_ETAT[s.etat] });
+    }
     if (d.aToi) {
       // une seule action « à toi » par session : la nouvelle remplace l'ancienne
       this.etat.actions = this.etat.actions.filter((a) => a.sessionId !== id);
@@ -90,6 +98,21 @@ class Store extends EventEmitter {
     this.etat.actions = this.etat.actions.filter((a) => !retirees.includes(a.sessionId));
     this._change();
     return retirees.length;
+  }
+
+  // Journal d'activité : le plus récent en premier, 50 entrées max, 24 h max
+  _noter(e) {
+    const l = this.etat.activite;
+    if (l[0] && l[0].sessionId === e.sessionId && l[0].etat === e.etat && l[0].texte === e.texte) return;
+    const limite = Date.now() - AGE_ACTIVITE;
+    l.unshift({ id: cle(), maj: new Date().toISOString(), ...e });
+    this.etat.activite = l.filter((x) => new Date(x.maj).getTime() > limite).slice(0, MAX_ACTIVITE);
+  }
+
+  ajouterActivite(texte, projet, etat) {
+    this._noter({ sessionId: '', titre: coupe(projet, LIMITES.projet), projet: coupe(projet, LIMITES.projet), etat: etat || '', texte: coupe(texte, LIMITES.detail) });
+    this._change();
+    return this.etat.activite[0];
   }
 
   majPoint(texte) {

@@ -203,3 +203,22 @@ test('nettoyer : retire les cartes sans mise à jour depuis plus de 1 h et leurs
   assert.deepEqual(s.lire().actions.map((a) => a.sessionId), ['recente']);
   assert.equal(s.nettoyer(), 0);
 });
+
+test('activité : journal automatique, ajout manuel, validation', async () => {
+  const s = new Store(null);
+  s.majSession('a', { titre: 'Accueil', projet: 'site', etat: 'encours', detail: 'Tests' });
+  s.majSession('a', { etat: 'encours', detail: 'Tests' }); // doublon : ignoré
+  s.majSession('a', { etat: 'attente' });
+  const j = s.lire().activite;
+  assert.equal(j.length, 2);
+  assert.equal(j[0].etat, 'attente');
+  assert.equal(j[1].texte, 'Tests');
+  const r = await appel('POST', '/activite', { texte: 'Build vert', projet: 'site', etat: 'fait' });
+  assert.equal(r.code, 201);
+  assert.equal((await appel('POST', '/activite', { texte: ' ' })).code, 400);
+  assert.equal((await appel('POST', '/activite', { texte: 'x', etat: 'nimporte' })).code, 400);
+  const e = (await appel('GET', '/etat')).corps;
+  assert.ok(e.activite.some((x) => x.texte === 'Build vert'));
+  for (let i = 0; i < 60; i++) s.ajouterActivite('n' + i, 'p');
+  assert.equal(s.lire().activite.length, 50);
+});

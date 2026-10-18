@@ -222,3 +222,21 @@ body.grand textarea { min-height: 90px; }
 @keyframes tape { 0% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
 @keyframes lit { 0% { transform: translateY(0); } 50% { transform: translateY(.8px); } }
 @keyframes pointe { 0% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+
+/* Onglets Activité / To do */
+#bloc-suivi { background: var(--carte); border: 1px solid var(--bord); border-radius: 10px; padding: 4px 10px 8px; }
+.onglets { display: flex; gap: 4px; border-bottom: 1px solid var(--bord); margin-bottom: 6px; }
+.onglet { border: 0; background: transparent; color: var(--discret); font: inherit; font-size: 12px; font-weight: 600; padding: 7px 10px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.onglet:hover { color: var(--texte); }
+.onglet[aria-selected=true] { color: var(--texte); border-bottom-color: var(--accent); }
+.vue { max-height: 168px; overflow-y: auto; }
+.activite { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ev { display: flex; gap: 8px; align-items: flex-start; border-left: 3px solid var(--c, var(--bord)); padding-left: 8px; }
+.ev-heure { flex: none; color: var(--discret); font-size: 11.5px; font-variant-numeric: tabular-nums; padding-top: 1px; }
+.ev-titre { font-weight: 600; font-size: 12.5px; }
+.ev-texte { color: var(--discret); font-size: 12px; }
+.ev.e-encours { --c: var(--encours); } .ev.e-attente { --c: var(--attente); } .ev.e-bloque { --c: var(--bloque); }
+.ev.e-fait { --c: var(--fait); } .ev.e-afaire { --c: var(--afaire); }
+#bloc-suivi .actions li { border: 0; border-left: 3px solid var(--accent); background: transparent; padding: 4px 8px; }
+body.grand .vue { max-height: 260px; }
+body.grand #bloc-suivi .actions { grid-template-columns: 1fr; }

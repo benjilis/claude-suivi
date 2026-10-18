@@ -39,7 +39,7 @@ N'appelle pas à chaque commande : seulement aux changements qui comptent.
 | `projet` | Nom du projet / dossier (« mon-site ») |
 | `etat` | `encours`, `attente`, `bloque`, `fait` ou `afaire` |
 | `detail` | 1-2 lignes : ce qui se passe maintenant |
-| `aToi` | (facultatif) action pour l'utilisateur, ajoutée à « À toi de jouer » |
+| `aToi` | (facultatif) action pour l'utilisateur, ajoutée à l'onglet **To do** du panneau |
 | `points` | (facultatif) 3 à 6 puces très courtes (120 caractères max chacune) : ce qui est fait, en cours, à venir. Visibles seulement quand l'utilisateur ouvre le panneau en plein écran. Remplace la liste précédente ; omis = inchangé |
 | `lien` | (facultatif) lien cliquable qui ouvre la session : `https://…` ou `claude://…`. **Ne l'invente jamais** : mets-le seulement si tu connais l'adresse exacte, sinon omet le champ. `""` l'efface |
 
@@ -49,7 +49,32 @@ N'appelle pas à chaque commande : seulement aux changements qui comptent.
 
 Exemple de puces (PowerShell) : `@{ points = @('✔ Tests écrits', '… Page d accueil en cours', 'À faire : relecture') }` ; en JSON : `"points":["✔ Tests écrits","… En cours : accueil"]`.
 
-Autres routes : `DELETE /sessions/:id`, `PUT /point` `{ "texte": "..." }` (résumé global d'une phrase), `POST /actions` `{ "texte": "...", "projet": "..." }`, `DELETE /actions/:id`, `GET /etat`.
+## Activité et To do (deux onglets du panneau)
+
+Sous « Le point », le panneau a deux onglets :
+
+- **Activité** : le journal des dernières mises à jour (heure, session, état, phrase). **Il se remplit tout seul** à chaque `PUT /sessions/:id` qui change l'état ou le `detail` : pas d'appel en plus. Pour noter un fait qui n'est pas un changement de carte (build vert, fichier livré, décision prise) : `POST /activite` avec `{ "texte": "...", "projet": "...", "etat": "fait" }` (`projet` et `etat` facultatifs ; texte 140 caractères max ; 50 entrées gardées, 24 h).
+- **To do** : les petites choses **à faire dans la foulée** que l'utilisateur risque d'oublier (relancer un test, mettre à jour la doc, répondre à quelqu'un, vérifier un résultat). **C'est à toi de le remplir** : dès que tu repères une tâche de suivi, ajoute-la avec `POST /actions` `{ "texte": "...", "projet": "..." }` (100 caractères max, une action = une chose concrète, à l'impératif : « Relancer les tests »). Le `aToi` d'une carte atterrit aussi ici. L'utilisateur la coche pour la retirer ; si tu l'as faite toi-même, retire-la avec `DELETE /actions/:id` (l'id est renvoyé par le POST, ou dans `GET /etat` → `actions`). Pas de doublons : lis `GET /etat` avant d'ajouter si tu n'es pas sûr.
+
+Exemples PowerShell :
+
+```powershell
+$corps = @{ texte = 'Relancer les tests après la fusion'; projet = 'mon-site' } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:4777/actions' -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($corps)) -TimeoutSec 3 | Out-Null
+
+$corps = @{ texte = 'Build vert, 18 tests passent'; projet = 'mon-site'; etat = 'fait' } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:4777/activite' -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($corps)) -TimeoutSec 3 | Out-Null
+```
+
+Exemple bash :
+
+```bash
+curl -s -m 3 -X POST http://127.0.0.1:4777/actions -H 'Content-Type: application/json; charset=utf-8' --data-binary @- >/dev/null <<'JSON'
+{"texte":"Relancer les tests après la fusion","projet":"mon-site"}
+JSON
+```
+
+Autres routes : `DELETE /sessions/:id`, `PUT /point` `{ "texte": "..." }` (résumé global d'une phrase), `POST /actions`, `DELETE /actions/:id`, `POST /activite`, `GET /etat`.
 
 ## Exemples PowerShell (accents corrects : corps envoyé en octets UTF-8)
 

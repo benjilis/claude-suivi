@@ -181,8 +181,22 @@ function dessiner() {
     li.append(cb, txt);
     ul.append(li);
   }
-  $('bloc-actions').hidden = !(etat.actions || []).length;
+  $('todo-vide').hidden = (etat.actions || []).length > 0;
   $('nb-actions').textContent = (etat.actions || []).length || '';
+
+  // Activité : journal des dernières mises à jour des sessions
+  const journal = etat.activite || [];
+  $('activite').replaceChildren(...journal.map((a) => {
+    const li = el('li', `ev e-${a.etat || 'neutre'}`);
+    li.append(el('span', 'ev-heure', heure(a.maj)));
+    const corps = el('div', 'ev-corps');
+    corps.append(el('div', 'ev-titre', [a.titre, a.etat ? LIBELLES[a.etat] : ''].filter(Boolean).join(' · ')));
+    if (a.texte) corps.append(el('div', 'ev-texte', a.texte));
+    li.append(corps);
+    return li;
+  }));
+  $('activite-vide').hidden = journal.length > 0;
+  $('nb-activite').textContent = journal.length || '';
 
   const maintenant = Date.now();
   const m = $('mascotte-entete');
@@ -274,3 +288,15 @@ function majGrand(actif) {
 $('btn-grand').addEventListener('click', () => window.suivi.pleinEcran(!document.body.classList.contains('grand')));
 window.suivi.onPleinEcran(majGrand);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('grand')) window.suivi.pleinEcran(false); });
+
+// Onglets Activité / To do (le choix est retenu)
+function choisirOnglet(nom) {
+  for (const n of ['activite', 'todo']) {
+    $('onglet-' + n).setAttribute('aria-selected', String(n === nom));
+    $('vue-' + n).hidden = n !== nom;
+  }
+  try { localStorage.setItem('onglet', nom); } catch { /* pas grave */ }
+}
+$('onglet-activite').addEventListener('click', () => choisirOnglet('activite'));
+$('onglet-todo').addEventListener('click', () => choisirOnglet('todo'));
+try { choisirOnglet(localStorage.getItem('onglet') === 'todo' ? 'todo' : 'activite'); } catch { /* défaut : activité */ }

@@ -91,6 +91,14 @@ function creerServeur(store) {
         return envoyer(res, 200, store.majPoint(d.texte));
       }
 
+      if (ressource === 'activite' && !id && m === 'POST') {
+        const d = await lireCorps(req);
+        if (typeof d.texte !== 'string' || !d.texte.trim()) return envoyer(res, 400, { erreur: 'texte requis' });
+        if (d.projet !== undefined && typeof d.projet !== 'string') return envoyer(res, 400, { erreur: 'projet doit être du texte' });
+        if (d.etat !== undefined && !ETATS.includes(d.etat)) return envoyer(res, 400, { erreur: `etat doit être : ${ETATS.join(', ')}` });
+        return envoyer(res, 201, store.ajouterActivite(d.texte, d.projet, d.etat));
+      }
+
       if (ressource === 'actions') {
         if (!id && m === 'POST') {
           const d = await lireCorps(req);

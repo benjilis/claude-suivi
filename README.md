@@ -22,7 +22,8 @@ npm start
 ## Utilisation
 
 - **Clic gauche** sur l'icône : le panneau s'ouvre au-dessus ; re-clic ou clic ailleurs : il se replie.
-- **Clic droit** : Ouvrir, Tout effacer, Lancer au démarrage, Notifications, Quitter.
+- **Clic droit** : Ouvrir, Replacer près de l'icône, Tout effacer, Lancer au démarrage, Notifications, Quitter.
+- **Déplacer / agrandir** : attrape l'en-tête pour déplacer le panneau, tire sur ses bords pour le redimensionner. Position et taille sont retenues (« Replacer près de l'icône » pour les oublier).
 - Un point rouge apparaît sur l'icône (et une notification Windows discrète) quand une session passe à « attend ta réponse » ou « bloqué ».
 - Les cartes « fait » de plus de 24 h se replient dans « Terminés ».
 

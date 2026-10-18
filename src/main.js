@@ -69,9 +69,21 @@ function majIcone() {
 }
 
 // ---- Panneau ----
+// Taille choisie en tirant sur les bords du panneau (bornée à l'écran)
+function tailleMemorisee() {
+  const t = reglages.taille;
+  const zone = screen.getPrimaryDisplay().workArea;
+  if (!t || typeof t.largeur !== 'number' || typeof t.hauteur !== 'number') return { largeur: LARGEUR, hauteur: HAUTEUR };
+  return {
+    largeur: Math.min(Math.max(Math.round(t.largeur), 320), zone.width),
+    hauteur: Math.min(Math.max(Math.round(t.hauteur), 380), zone.height),
+  };
+}
+
 function creerFenetre() {
   fenetre = new BrowserWindow({
-    width: LARGEUR, height: HAUTEUR, show: false, frame: false, resizable: false, movable: true,
+    width: tailleMemorisee().largeur, height: tailleMemorisee().hauteur, minWidth: 320, minHeight: 380,
+    show: false, frame: false, resizable: true, movable: true,
     minimizable: false, maximizable: false, fullscreenable: false, skipTaskbar: true, alwaysOnTop: true,
     roundedCorners: true,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#262624' : '#FAF9F5',
@@ -85,27 +97,32 @@ function creerFenetre() {
   fenetre.on('show', () => envoyerEtat());
   // Déplacé à la main : on retient l'endroit (fin du déplacement, après une courte pause)
   let minuteurPosition;
-  fenetre.on('move', () => {
-    if (pleinEcran || Date.now() - dernierPlacement < 800) return; // placement automatique, pas un déplacement
+  const retenirGeometrie = () => {
+    if (pleinEcran || Date.now() - dernierPlacement < 800) return; // placement automatique, pas l'utilisateur
     clearTimeout(minuteurPosition);
     minuteurPosition = setTimeout(() => {
-      if (!fenetre.isVisible()) return;
+      if (!fenetre.isVisible() || pleinEcran) return;
       const [x, y] = fenetre.getPosition();
+      const [largeur, hauteur] = fenetre.getSize();
       reglages.position = { x, y };
+      reglages.taille = { largeur, hauteur };
       sauverReglages();
     }, 400);
-  });
+  };
+  fenetre.on('move', retenirGeometrie);
+  fenetre.on('resize', retenirGeometrie);
 }
 
 function positionner() {
   const b = tray.getBounds();
   const ecran = screen.getDisplayNearestPoint({ x: b.x, y: b.y });
   const zone = ecran.workArea;
-  let x = Math.round(b.x + b.width / 2 - LARGEUR / 2);
-  let y = b.y >= zone.y + zone.height ? b.y - HAUTEUR - 8 : b.y + b.height + 8;
+  const [largeur, hauteur] = fenetre.getSize();
+  let x = Math.round(b.x + b.width / 2 - largeur / 2);
+  let y = b.y >= zone.y + zone.height ? b.y - hauteur - 8 : b.y + b.height + 8;
   if (b.y < zone.y + zone.height && b.y + b.height <= zone.y + 4) y = zone.y + 8; // barre des tâches en haut
-  x = Math.min(Math.max(x, zone.x + 8), zone.x + zone.width - LARGEUR - 8);
-  y = Math.min(Math.max(y, zone.y + 8), zone.y + zone.height - HAUTEUR - 8);
+  x = Math.min(Math.max(x, zone.x + 8), zone.x + zone.width - largeur - 8);
+  y = Math.min(Math.max(y, zone.y + 8), zone.y + zone.height - hauteur - 8);
   fenetre.setPosition(x, y, false);
 }
 
@@ -128,22 +145,31 @@ function basculerPleinEcran(actif = !pleinEcran) {
   if (actif) {
     boitePetite = fenetre.getBounds();
     const zone = screen.getDisplayMatching(boitePetite).workArea;
-    fenetre.setResizable(true);
     fenetre.setBounds(zone);
   } else {
-    fenetre.setResizable(false);
     fenetre.setBounds(boitePetite || { x: 0, y: 0, width: LARGEUR, height: HAUTEUR });
   }
   fenetre.webContents.send('plein-ecran', pleinEcran);
 }
 
 function ouvrir() {
-  const p = reglages.epingle ? positionMemorisee() : null;
+  const p = positionMemorisee();
   dernierPlacement = Date.now();
   if (p) fenetre.setPosition(p.x, p.y, false); else positionner();
   fenetre.show();
   fenetre.focus();
   if (pastille) { pastille = false; majIcone(); }
+}
+
+// Oublie la position et la taille choisies à la main : le panneau revient près de l'icône
+function replacer() {
+  delete reglages.position;
+  delete reglages.taille;
+  sauverReglages();
+  basculerPleinEcran(false);
+  dernierPlacement = Date.now();
+  fenetre.setSize(LARGEUR, HAUTEUR);
+  ouvrir();
 }
 
 function basculer() {
@@ -161,6 +187,7 @@ function envoyerEtat() {
 function menu() {
   return Menu.buildFromTemplate([
     { label: 'Ouvrir', click: ouvrir },
+    { label: 'Replacer près de l\'icône', click: replacer },
     { label: 'Tout effacer', click: confirmerEffacer },
     { type: 'separator' },
     { label: 'Lancer au démarrage de Windows', type: 'checkbox', checked: lancerAuDemarrage(), click: (i) => regleDemarrage(i.checked) },

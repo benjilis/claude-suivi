@@ -51,10 +51,10 @@ Exemple de puces (PowerShell) : `@{ points = @('✔ Tests écrits', '… Page d 
 
 ## Activité et To do (deux onglets du panneau)
 
-Sous « Le point », le panneau a deux onglets :
+Sous « Le point », le panneau a une barre de deux onglets :
 
-- **Activité** : le journal des dernières mises à jour (heure, session, état, phrase). **Il se remplit tout seul** à chaque `PUT /sessions/:id` qui change l'état ou le `detail` : pas d'appel en plus. Pour noter un fait qui n'est pas un changement de carte (build vert, fichier livré, décision prise) : `POST /activite` avec `{ "texte": "...", "projet": "...", "etat": "fait" }` (`projet` et `etat` facultatifs ; texte 140 caractères max ; 50 entrées gardées, 24 h).
-- **To do** : les petites choses **à faire dans la foulée** que l'utilisateur risque d'oublier (relancer un test, mettre à jour la doc, répondre à quelqu'un, vérifier un résultat). **C'est à toi de le remplir** : dès que tu repères une tâche de suivi, ajoute-la avec `POST /actions` `{ "texte": "...", "projet": "..." }` (100 caractères max, une action = une chose concrète, à l'impératif : « Relancer les tests »). Le `aToi` d'une carte atterrit aussi ici. L'utilisateur la coche pour la retirer ; si tu l'as faite toi-même, retire-la avec `DELETE /actions/:id` (l'id est renvoyé par le POST, ou dans `GET /etat` → `actions`). Pas de doublons : lis `GET /etat` avant d'ajouter si tu n'es pas sûr.
+- **Activité** : toutes les cartes de sessions (ce que tu mets avec `PUT /sessions/:id`). Dessous, un « Journal récent » replié (heure, session, état, phrase) qui **se remplit tout seul** à chaque `PUT /sessions/:id` qui change l'état ou le `detail` : pas d'appel en plus. Pour noter un fait qui n'est pas un changement de carte (build vert, fichier livré, décision prise) : `POST /activite` avec `{ "texte": "...", "projet": "...", "etat": "fait" }` (`projet` et `etat` facultatifs ; texte 140 caractères max ; 50 entrées gardées, 24 h).
+- **To do** : des cartes-rappels (du texte, pas une checklist) : les petites choses **à faire traiter par Claude dans la foulée** que l'utilisateur risque d'oublier (relancer un test, mettre à jour la doc, répondre à quelqu'un, vérifier un résultat). **C'est à toi de le remplir** : dès que tu repères une tâche de suivi, ajoute-la avec `POST /actions` `{ "texte": "...", "projet": "..." }` (100 caractères max, une action = une chose concrète, à l'impératif : « Relancer les tests »). Le `aToi` d'une carte atterrit aussi ici. L'utilisateur la retire d'un clic sur ✕ ; si tu l'as faite toi-même, retire-la avec `DELETE /actions/:id` (l'id est renvoyé par le POST, ou dans `GET /etat` → `actions`). Pas de doublons : lis `GET /etat` avant d'ajouter si tu n'es pas sûr.
 
 Exemples PowerShell :
 

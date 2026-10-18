@@ -223,13 +223,17 @@ body.grand textarea { min-height: 90px; }
 @keyframes lit { 0% { transform: translateY(0); } 50% { transform: translateY(.8px); } }
 @keyframes pointe { 0% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
 
-/* Onglets Activité / To do */
-#bloc-suivi { background: var(--carte); border: 1px solid var(--bord); border-radius: 10px; padding: 4px 10px 8px; }
-.onglets { display: flex; gap: 4px; border-bottom: 1px solid var(--bord); margin-bottom: 6px; }
-.onglet { border: 0; background: transparent; color: var(--discret); font: inherit; font-size: 12px; font-weight: 600; padding: 7px 10px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.onglet:hover { color: var(--texte); }
-.onglet[aria-selected=true] { color: var(--texte); border-bottom-color: var(--accent); }
-.vue { max-height: 168px; overflow-y: auto; }
+/* Barre d'onglets Activité / To do, sous « Le point » */
+.barre-onglets { display: flex; background: var(--accent); border-radius: 10px; padding: 0 6px; }
+.onglet { flex: 1; border: 0; background: transparent; color: rgba(255, 255, 255, .72); font: inherit; font-size: 14px; font-weight: 500; padding: 11px 8px 9px; cursor: pointer; border-bottom: 3px solid transparent; }
+.onglet:hover { color: #fff; }
+.onglet[aria-selected=true] { color: #fff; font-weight: 700; border-bottom-color: #fff; }
+.onglet .nb { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; font-size: 11px; font-weight: 700; line-height: 17px; border-radius: 9px; background: rgba(255, 255, 255, .25); color: #fff; }
+.onglet .nb:empty { display: none; }
+.carte.todo { border-left: 3px solid var(--accent); }
+.titre.plein { white-space: normal; }
+.journal { margin-top: 10px; }
+.journal summary { cursor: pointer; color: var(--discret); font-size: 12px; margin-bottom: 6px; }
 .activite { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .ev { display: flex; gap: 8px; align-items: flex-start; border-left: 3px solid var(--c, var(--bord)); padding-left: 8px; }
 .ev-heure { flex: none; color: var(--discret); font-size: 11.5px; font-variant-numeric: tabular-nums; padding-top: 1px; }
@@ -237,6 +241,5 @@ body.grand textarea { min-height: 90px; }
 .ev-texte { color: var(--discret); font-size: 12px; }
 .ev.e-encours { --c: var(--encours); } .ev.e-attente { --c: var(--attente); } .ev.e-bloque { --c: var(--bloque); }
 .ev.e-fait { --c: var(--fait); } .ev.e-afaire { --c: var(--afaire); }
-#bloc-suivi .actions li { border: 0; border-left: 3px solid var(--accent); background: transparent; padding: 4px 8px; }
-body.grand .vue { max-height: 260px; }
-body.grand #bloc-suivi .actions { grid-template-columns: 1fr; }
+body.grand #cartes-todo { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; align-items: start; }
+body.grand .barre-onglets { max-width: 460px; }

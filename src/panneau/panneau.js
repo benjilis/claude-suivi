@@ -144,6 +144,28 @@ function carte(s) {
   return c;
 }
 
+function carteTodo(a) {
+  const c = el('article', 'carte todo');
+  c.append(el('div', 'titre plein', a.texte));
+  if (a.projet) c.append(el('div', 'projet', a.projet));
+  const pied = el('div', 'pied');
+  pied.append(el('span', null, `Ajouté à ${heure(a.maj)}`), el('span', 'age', anciennete(a.maj)));
+  pied.lastChild.dataset.maj = a.maj;
+  c.append(pied);
+  if (a.lien) {
+    c.classList.add('cliquable');
+    c.title = 'Ouvrir la session';
+    c.addEventListener('click', () => window.suivi.ouvrirLien(a.lien));
+    c.append(el('span', 'ouvrir', 'Ouvrir ↗'));
+  }
+  const x = el('button', 'icone retirer', '✕');
+  x.title = 'Retirer ce rappel';
+  x.setAttribute('aria-label', 'Retirer ce rappel');
+  x.addEventListener('click', (e) => { e.stopPropagation(); window.suivi.cocherAction(a.id); });
+  c.append(x);
+  return c;
+}
+
 // Tri « Projet » : un titre par projet ; les projets avec la session la plus urgente passent en premier
 function groupes(liste) {
   const par = new Map();
@@ -165,24 +187,11 @@ function dessiner() {
   $('point-texte').textContent = p.texte || 'Rien à signaler pour le moment.';
   $('point-maj').textContent = p.maj ? `Mis à jour à ${heure(p.maj)}` : '';
 
-  const ul = $('actions');
-  ul.replaceChildren();
-  for (const a of etat.actions || []) {
-    const li = el('li');
-    const cb = el('input');
-    cb.type = 'checkbox';
-    cb.setAttribute('aria-label', 'Terminé : ' + a.texte);
-    cb.addEventListener('change', () => window.suivi.cocherAction(a.id));
-    const txt = el('div');
-    const t = el('div', a.lien ? 'lien' : null, a.texte + (a.lien ? ' ↗' : ''));
-    if (a.lien) { t.title = 'Ouvrir la session'; t.addEventListener('click', () => window.suivi.ouvrirLien(a.lien)); }
-    txt.append(t);
-    if (a.projet) txt.append(el('div', 'proj', a.projet));
-    li.append(cb, txt);
-    ul.append(li);
-  }
-  $('todo-vide').hidden = (etat.actions || []).length > 0;
-  $('nb-actions').textContent = (etat.actions || []).length || '';
+  // To do : de simples cartes-rappels (rien à cocher), retirées d'un clic sur ✕
+  const todo = etat.actions || [];
+  $('cartes-todo').replaceChildren(...todo.map(carteTodo));
+  $('todo-vide').hidden = todo.length > 0;
+  $('nb-actions').textContent = todo.length || '';
 
   // Activité : journal des dernières mises à jour des sessions
   const journal = etat.activite || [];
@@ -196,7 +205,7 @@ function dessiner() {
     return li;
   }));
   $('activite-vide').hidden = journal.length > 0;
-  $('nb-activite').textContent = journal.length || '';
+  $('nb-journal').textContent = journal.length || '';
 
   const maintenant = Date.now();
   const m = $('mascotte-entete');
@@ -211,6 +220,7 @@ function dessiner() {
 
   $('cartes').replaceChildren(...(tri === 'projet' ? groupes(actives) : actives.map(carte)));
   $('tri-nom').textContent = NOMS_TRI[tri];
+  $('nb-activite').textContent = actives.length || '';
   $('vide').hidden = actives.length > 0 || terminees.length > 0;
   $('cartes-termines').replaceChildren(...terminees.map(carte));
   $('termines').hidden = !terminees.length;

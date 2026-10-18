@@ -27,22 +27,12 @@
       <p id="point-maj" class="discret"></p>
     </section>
 
-    <section id="bloc-suivi">
-      <div class="onglets" role="tablist">
-        <button id="onglet-activite" class="onglet" role="tab" aria-selected="true" aria-controls="vue-activite">Activité <span id="nb-activite" class="compteur"></span></button>
-        <button id="onglet-todo" class="onglet" role="tab" aria-selected="false" aria-controls="vue-todo">To do <span id="nb-actions" class="compteur"></span></button>
-      </div>
-      <div id="vue-activite" class="vue" role="tabpanel">
-        <ul id="activite" class="activite"></ul>
-        <p id="activite-vide" class="discret">Rien de récent.</p>
-      </div>
-      <div id="vue-todo" class="vue" role="tabpanel" hidden>
-        <ul id="actions" class="actions"></ul>
-        <p id="todo-vide" class="discret">Rien à faire dans la foulée.</p>
-      </div>
-    </section>
+    <nav class="barre-onglets" role="tablist">
+      <button id="onglet-activite" class="onglet" role="tab" aria-selected="true" aria-controls="vue-activite">Activité <span id="nb-activite" class="nb"></span></button>
+      <button id="onglet-todo" class="onglet" role="tab" aria-selected="false" aria-controls="vue-todo">To do <span id="nb-actions" class="nb"></span></button>
+    </nav>
 
-    <section>
+    <section id="vue-activite" role="tabpanel">
       <h2 class="titre-sessions">Sessions <button id="btn-nettoyer" class="nettoyer" title="Retire les cartes sans mise à jour depuis plus d'une heure">🧹 Nettoyer</button></h2>
       <div id="cartes"></div>
       <p id="vide" class="discret" hidden>Aucune session pour le moment.</p>
@@ -50,6 +40,17 @@
         <summary>Terminés <span id="nb-termines" class="compteur"></span></summary>
         <div id="cartes-termines"></div>
       </details>
+      <details id="journal" class="journal">
+        <summary>Journal récent <span id="nb-journal" class="compteur"></span></summary>
+        <ul id="activite" class="activite"></ul>
+        <p id="activite-vide" class="discret">Rien de récent.</p>
+      </details>
+    </section>
+
+    <section id="vue-todo" role="tabpanel" hidden>
+      <h2>À faire traiter par Claude</h2>
+      <div id="cartes-todo"></div>
+      <p id="todo-vide" class="discret">Rien à faire dans la foulée.</p>
     </section>
   </main>
 

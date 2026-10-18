@@ -41,7 +41,7 @@ Désactivé par défaut. Active-le dans le menu clic droit ou via l'engrenage �
 | `PUT /sessions/:id` | crée/met à jour une carte : `{ titre, projet, etat, detail, aToi? }` |
 | `DELETE /sessions/:id` | supprime une carte |
 | `PUT /point` | `{ texte }` : le résumé en haut du panneau |
-| `POST /actions` | `{ texte, projet? }` : ajoute un élément à l'onglet **To do** |
+| `POST /actions` | `{ texte, projet? }` : ajoute un rappel dans l'onglet **To do** (cartes de texte à faire traiter par Claude) |
 | `DELETE /actions/:id` | retire un élément du To do |
 | `POST /activite` | `{ texte, projet?, etat? }` : ajoute une ligne à l'onglet **Activité** (qui se remplit aussi toute seule à chaque mise à jour de carte) |
 

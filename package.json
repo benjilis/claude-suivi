@@ -9,9 +9,59 @@
     "start": "electron .",
     "test": "node --test \"test/*.test.js\"",
     "install-skill": "powershell -NoProfile -ExecutionPolicy Bypass -File install-skill.ps1",
-    "install-statusline": "powershell -NoProfile -ExecutionPolicy Bypass -File install-statusline.ps1"
+    "install-statusline": "powershell -NoProfile -ExecutionPolicy Bypass -File install-statusline.ps1",
+    "dist": "electron-builder --win --publish never",
+    "icon": "node build/make-icon.js"
   },
   "devDependencies": {
-    "electron": "44.9.0"
+    "electron": "44.9.3",
+    "electron-builder": "26.18.0"
+  },
+  "author": "benjilis",
+  "homepage": "https://github.com/benjilis/claude-suivi",
+  "build": {
+    "appId": "fr.benjilis.claude-suivi",
+    "productName": "Claude Suivi",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "skill",
+        "to": "skill"
+      }
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Claude-Suivi-Setup-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "Claude-Suivi-${version}-portable.exe"
+    }
   }
 }

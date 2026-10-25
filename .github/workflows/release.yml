@@ -1,0 +1,48 @@
+name: Publier une version
+
+# Pousser un tag « vX.Y.Z » construit les exécutables Windows et les attache à une release GitHub.
+#   git tag v1.0.0 && git push origin v1.0.0
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      - name: Vérifier que le tag correspond à la version de package.json
+        shell: bash
+        run: |
+          v="$(node -p "require('./package.json').version")"
+          if [ "v$v" != "${GITHUB_REF_NAME}" ]; then
+            echo "Le tag ${GITHUB_REF_NAME} ne correspond pas à la version $v de package.json" >&2
+            exit 1
+          fi
+
+      - run: npm run dist
+
+      - name: Créer la release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            "dist/Claude-Suivi-Setup-${GITHUB_REF_NAME#v}.exe" \
+            "dist/Claude-Suivi-${GITHUB_REF_NAME#v}-portable.exe" \
+            --title "Claude Suivi ${GITHUB_REF_NAME}" \
+            --generate-notes \
+            --notes "Windows 64 bits. **Setup** : s'installe sans droits administrateur et se lance tout seul. **Portable** : un seul fichier, sans installation. Windows peut afficher « SmartScreen » car l'application n'est pas signée : « Informations complémentaires » puis « Exécuter quand même »."

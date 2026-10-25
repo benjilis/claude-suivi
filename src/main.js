@@ -31,7 +31,11 @@ function sauverReglages() {
   fs.writeFileSync(fichierReglages(), JSON.stringify(reglages, null, 2), 'utf8');
 }
 
-const optionsDemarrage = () => ({ path: process.execPath, args: [app.getAppPath()] });
+// En développement, Electron lance le dossier du projet ; une fois empaqueté, c'est l'exécutable seul
+// (la version « portable » se décompresse ailleurs : son vrai chemin est dans PORTABLE_EXECUTABLE_FILE).
+const optionsDemarrage = () => (app.isPackaged
+  ? { path: process.env.PORTABLE_EXECUTABLE_FILE || process.execPath, args: [] }
+  : { path: process.execPath, args: [app.getAppPath()] });
 const lancerAuDemarrage = () => app.getLoginItemSettings(optionsDemarrage()).openAtLogin;
 function regleDemarrage(actif) {
   app.setLoginItemSettings({ openAtLogin: actif, ...optionsDemarrage() });
@@ -199,12 +203,26 @@ function menu() {
     { label: 'Ouvrir', click: ouvrir },
     { label: 'Replacer près de l\'icône', click: replacer },
     { label: 'Tout effacer', click: confirmerEffacer },
+    { label: 'Installer le skill dans Claude', click: installerSkill },
     { type: 'separator' },
     { label: 'Lancer au démarrage de Windows', type: 'checkbox', checked: lancerAuDemarrage(), click: (i) => regleDemarrage(i.checked) },
     { label: 'Notifications', type: 'checkbox', checked: reglages.notifications, click: (i) => { reglages.notifications = i.checked; sauverReglages(); envoyerReglages(); } },
     { type: 'separator' },
     { label: 'Quitter', click: () => app.quit() },
   ]);
+}
+
+// Copie le skill dans ~/.claude/skills/claude-suivi pour que les sessions Claude connaissent l'API
+function installerSkill() {
+  const source = app.isPackaged ? path.join(process.resourcesPath, 'skill', 'claude-suivi') : path.join(__dirname, '..', 'skill', 'claude-suivi');
+  const cible = path.join(app.getPath('home'), '.claude', 'skills', 'claude-suivi');
+  try {
+    fs.mkdirSync(cible, { recursive: true });
+    fs.cpSync(source, cible, { recursive: true, force: true });
+    dialog.showMessageBoxSync({ type: 'info', title: 'Claude Suivi', message: 'Skill installé.', detail: `${cible}\n\nLes nouvelles sessions Claude s'en serviront pour mettre à jour le panneau.` });
+  } catch (e) {
+    dialog.showErrorBox('Claude Suivi', `Impossible d'installer le skill : ${e.code || e.message}`);
+  }
 }
 
 function confirmerEffacer() {

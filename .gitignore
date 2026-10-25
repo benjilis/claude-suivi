@@ -1,8 +1,8 @@
-node_modules/
-dist/
-out/
 *.log
+.env
+dist/
 etat.json
 etat.json.tmp
+node_modules/
+out/
 reglages.json
-.env

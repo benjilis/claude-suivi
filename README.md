@@ -4,6 +4,25 @@ Petite appli Windows (Electron) qui vit dans la zone de notification et montre d
 
 Les sessions Claude la mettent à jour toutes seules grâce à un *skill* qui appelle une petite API locale.
 
+## Télécharger l'application (sans Node ni Git)
+
+Dans les [Releases](https://github.com/benjilis/claude-suivi/releases) :
+
+- **Claude-Suivi-Setup-X.Y.Z.exe** : installation en un clic (sans droits administrateur), l'appli se lance ensuite toute seule.
+- **Claude-Suivi-X.Y.Z-portable.exe** : un seul fichier, sans installation.
+
+Windows peut afficher « SmartScreen » car l'appli n'est pas signée : « Informations complémentaires », puis « Exécuter quand même ».
+Pour que les sessions Claude connaissent le panneau : clic droit sur l'icône, puis **Installer le skill dans Claude**.
+
+### Fabriquer une version
+
+```bash
+npm run dist          # construit dist/*.exe (installateur + portable)
+git tag v1.0.1 && git push origin v1.0.1   # GitHub construit et publie la release tout seul
+```
+
+(Le numéro du tag doit être celui de `version` dans `package.json`.)
+
 ## Installation sur un nouveau PC
 
 Prérequis : Node.js et Git.
@@ -23,7 +42,7 @@ npm start
 ## Utilisation
 
 - **Clic gauche** sur l'icône : le panneau s'ouvre au-dessus ; re-clic ou clic ailleurs : il se replie.
-- **Clic droit** : Ouvrir, Replacer près de l'icône, Tout effacer, Lancer au démarrage, Notifications, Quitter.
+- **Clic droit** : Ouvrir, Replacer près de l'icône, Tout effacer, Installer le skill dans Claude, Lancer au démarrage, Notifications, Quitter.
 - **Déplacer / agrandir** : attrape l'en-tête pour déplacer le panneau, tire sur ses bords pour le redimensionner. Position et taille sont retenues (« Replacer près de l'icône » pour les oublier).
 - Un point rouge apparaît sur l'icône (et une notification Windows discrète) quand une session passe à « attend ta réponse » ou « bloqué ».
 - Les cartes « fait » de plus de 24 h se replient dans « Terminés ».
